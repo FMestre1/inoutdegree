@@ -7,8 +7,6 @@ library(FWebs)
 #Getting data in ##########################################################
 
 #MANGAL ###################################################################
-library(tidyverse)
-library(rmangal)
 
 mg1 <- create.fw.list(db="mg", ref=TRUE, spatial = TRUE, code =TRUE, 
                       mangal_types =c("mutualism", "predation", "herbivory", 
