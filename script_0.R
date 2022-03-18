@@ -45,7 +45,7 @@ names(wl1)
 wl1$code
 length(wl1$int_matrix)
 wl1$int_matrix
-wl1$references
+head(wl1$references)
 wl1$spatial_info
 names(wl1)
 names(wl1$int_matrix)
@@ -68,9 +68,9 @@ is.sq.matrix(wl1)
 #as.vector(unlist(lapply(web_of_life_interaction_matrices, nrow)))[166]
 
 wl2 <- rect2square(wl1)
-web_of_life_metrics <- fw.metrics(web_of_life_interaction_matrices_2)
+web_of_life_metrics <- fw.metrics(wl2)
 #
-wl2 <- convert.to.graph.list(wl1)
+wl3 <- convert.to.graph.list(wl2)
 
 
 
