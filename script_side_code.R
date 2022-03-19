@@ -1,5 +1,6 @@
 ###########################################################################
 #TEST OTHER DATABASES
+library(FWebs)
 
 #EcoBase
 eb1 <- create.fw.list(db ="eb", ecosyst = TRUE, spatial = TRUE, ref = TRUE)
@@ -21,4 +22,20 @@ gw1$code
 
 gw2 <- remove.repeated.names(gw1)
 gw3 <- remove.non.numeric(gw2)
+gw4 <- rect2square(gw3)
+
+names(gw2)
+names(gw3)
 ###########################################################################
+
+dd.fw(eb2, log=TRUE, cumulative=TRUE)
+dd.fw(gw4, log=TRUE, cumulative=TRUE)
+
+
+
+
+
+
+
+
+

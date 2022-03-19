@@ -39,6 +39,7 @@ write.csv(matrix1,"C:/Users/FMest/Documents/0. Artigos/in_out_degree/w_life_data
 wl1 <- create.fw.list(folder="C:/Users/FMest/Documents/0. Artigos/in_out_degree/w_life_database/", 
                       db="wl", ref=TRUE, spatial = TRUE, code = TRUE)
 
+
 names(wl1)
 wl1$code
 length(wl1$int_matrix)
