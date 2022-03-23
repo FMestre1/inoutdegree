@@ -1,76 +1,51 @@
 #FMestre
 #16-03-2022
 
-library(FWebs)
+#Using rmangal
+
+library(rmangal)
+library(igraph)
+
+#"mutualism", "predation", "herbivory", "scavenger", "detritivore"
+
+mangal_mutualism <- search_interactions(type = "mutualism", verbose = TRUE)
+mangal_predation <- search_interactions(type = "predation", verbose = TRUE)
+mangal_herbivory <- search_interactions(type = "herbivory", verbose = TRUE)
+mangal_scavenger <- search_interactions(type = "scavenger", verbose = TRUE)
+mangal_detritivore <- search_interactions(type = "detritivore", verbose = TRUE)
+
+#Select directed
+mangal_mutualism_dir <-  mangal_mutualism[mangal_mutualism$direction == "directed",]
+mangal_predation_dir <- mangal_predation[mangal_predation$direction == "directed",]
+mangal_herbivory_dir <- mangal_herbivory[mangal_herbivory$direction == "directed",]
+mangal_scavenger_dir <- mangal_scavenger[mangal_scavenger$direction == "directed",]
+mangal_detritivore_dir <- mangal_detritivore[mangal_detritivore$direction == "directed",]
 
 
-#Getting data in ##########################################################
-
-#MANGAL ###################################################################
-
-mg1 <- create.fw.list(db="mg", ref=TRUE, spatial = TRUE, code =TRUE, 
-                      mangal_types =c("mutualism", "predation", "herbivory", 
-                                      "scavenger", "detritivore"))
+mangal_collection_mutualism_dir <- get_collection(mangal_mutualism_dir, as_sf = TRUE, verbose = TRUE)
+mangal_collection_predation_dir <- get_collection(mangal_predation_dir, as_sf = TRUE, verbose = TRUE)
+mangal_collection_herbivory_dir <- get_collection(mangal_herbivory_dir, as_sf = TRUE, verbose = TRUE)
+mangal_collection_scavenger_dir <- get_collection(mangal_scavenger_dir, as_sf = TRUE, verbose = TRUE)
+mangal_collection_detritivore_dir <- get_collection(mangal_detritivore_dir, as_sf = TRUE, verbose = TRUE)
 
 
-names(mg1$int_matrix)
-View(mg1$references)
-mg1$spatial_info
-names(mg1)
-nrow(mg1$references)
-length(mg1$int_matrix)
-mg1$code
-
-save(mg1, file="mangal_dataset.RData")
-
-#WEB OF LIVE ##############################################################
-#"This work has used the Web of Life dataset (www.web-of-life.es)".
-#This does not preclude citing the author of individual networks when needed. 
-#You will find the references inside the file references.csv.
-
-############################
-#correct the first matrix (it has a "number of sampled" column!!!!!)
-matrix1 <- read.csv("C:/Users/FMest/Documents/0. Artigos/in_out_degree/w_life_database/A_HP_001.csv")
-View(matrix1)
-matrix1 <- matrix1[,-2]
-write.csv(matrix1,"C:/Users/FMest/Documents/0. Artigos/in_out_degree/w_life_database/A_HP_001.csv", row.names = FALSE)
-############################
-
-wl1 <- create.fw.list(folder="C:/Users/FMest/Documents/0. Artigos/in_out_degree/w_life_database/", 
-                      db="wl", ref=TRUE, spatial = TRUE, code = TRUE)
-
-names(wl1)
-wl1$code
-length(wl1$int_matrix)
-wl1$int_matrix
-head(wl1$references)
-wl1$spatial_info
-names(wl1)
-names(wl1$int_matrix)
-
-save(wl1, file="web_of_life_dataset.RData")
-
-##
-
-is.sq.matrix(mg1)
-mangal_metrics <- fw.metrics(mg1)
-names(mangal_metrics)
-#
-mg2 <- convert.to.graph.list(mg1)
-
-##
-
-is.sq.matrix(wl1)
-
-#as.vector(unlist(lapply(web_of_life_interaction_matrices, ncol)))
-#as.vector(unlist(lapply(web_of_life_interaction_matrices, nrow)))[166]
-
-wl2 <- rect2square(wl1)
-web_of_life_metrics <- fw.metrics(wl2)
-#
-wl3 <- convert.to.graph.list(wl2)
+mangal_collection <- combine_mgNetworks(mangal_collection_mutualism_dir, mangal_collection_predation_dir, 
+                                        mangal_collection_herbivory_dir, mangal_collection_scavenger_dir, 
+                                        mangal_collection_detritivore_dir)
 
 
+#Save
+save(mangal_collection, file="mangal_dataset_mangal.RData")
+
+
+#Convert to igraph
+mangal_collection_igraph <- as.igraph(mangal_collection)
+save(mangal_collection_igraph, file="mangal_dataset_igraph.RData")
+
+
+#Getting the "in" and "out" degree of all networks
+#plot(degree_distribution(mangal_collection_igraph[[1]], cumulative = FALSE, mode = "in"), type = "l")
+#plot(degree_distribution(mangal_collection_igraph[[1]], cumulative = FALSE, mode = "out"), type = "l")
 
 
 
