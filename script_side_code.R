@@ -106,7 +106,26 @@ mangal_1$code
 ###########################################################################
 
 
+###############################################################3
+#Plot in-degree
+for(i in 1:length(in_degree_list)){
+  
+  if(i==1) plot(in_degree_list[[i]], col ="red", type="l", lwd=2, ylim=c(0, 1))
+  
+  if(i!=1) lines(in_degree_list[[i]], col = sample(rainbow(100),1), type="l", lwd=2)
+  
+}
 
+#plot out-degree
+for(i in 1:length(out_degree_list)){
+  
+  if(i==1) plot(out_degree_list[[i]], col ="red", type="l", lwd=2, ylim=c(0, 1))
+  
+  if(i!=1) lines(out_degree_list[[i]], col = sample(rainbow(100),1), type="l", lwd=2)
+  
+}
+
+#################################################################
 
 
 

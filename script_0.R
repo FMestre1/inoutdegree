@@ -40,33 +40,67 @@ save(mangal_collection_igraph, file="mangal_dataset_igraph.RData")
 
 #Getting the "in" and "out" degree of all networks
 
+
 in_degree_list <- list()
 out_degree_list <- list()
 
 for(i in 1:length(mangal_collection_igraph)){
 
-in_degree_list[[i]] <- degree_distribution(mangal_collection_igraph[[i]], cumulative = FALSE, mode = "in")
-out_degree_list[[i]] <- degree_distribution(mangal_collection_igraph[[i]], cumulative = FALSE, mode = "out")
-
+in_degree_list[[i]] <- degree(mangal_collection_igraph[[i]], mode="in")
+out_degree_list[[i]] <- degree(mangal_collection_igraph[[i]], mode="out")
+  
 message(paste0("Concluded matrix ", i, "!"))
 
 }
 
-#Plot in-degree
-for(i in 1:length(in_degree_list)){
+mangal_collection_igraph_2 <- mangal_collection_igraph[as.numeric(lapply(in_degree_list, sum)) > as.numeric(lapply(in_degree_list, length))]
 
-if(i==1) plot(in_degree_list[[i]], col ="red", type="l", lwd=2, ylim=c(0, 1))
+length(mangal_collection_igraph_2)
+
+##
+
+in_degree_list_2 <- list()
+out_degree_list_2 <- list()
+
+for(i in 1:length(mangal_collection_igraph_2)){
   
-if(i!=1) lines(in_degree_list[[i]], col = sample(rainbow(100),1), type="l", lwd=2)
+  in_degree_list_2[[i]] <- degree(mangal_collection_igraph_2[[i]], mode="in")
+  out_degree_list_2[[i]] <- degree(mangal_collection_igraph_2[[i]], mode="out")
+  
+  message(paste0("Concluded matrix ", i, "!"))
   
 }
 
-#plot out-degree
-for(i in 1:length(out_degree_list)){
+#mangal_collection_igraph_2 <- mangal_collection_igraph[-c(53:63)]
+
+
+alpha_in <- c()
+alpha_out <- c()
+p_in <- c()
+p_out <- c()
+log_lik_in <- c()
+log_lik_out <- c()
+
+for(i in 1:length(mangal_collection_igraph_2)){
   
-  if(i==1) plot(out_degree_list[[i]], col ="red", type="l", lwd=2, ylim=c(0, 1))
-  
-  if(i!=1) lines(out_degree_list[[i]], col = sample(rainbow(100),1), type="l", lwd=2)
-  
+fit_in <- fit_power_law(in_degree_list_2[[i]]+1)
+fit_out <- fit_power_law(out_degree_list_2[[i]]+1)
+
+ 
+alpha_in[i] <- fit_in$alpha
+alpha_out[i] <- fit_out$alpha
+p_in[i] <- fit_in$KS.p
+p_out[i] <- fit_out$KS.p
+log_lik_in[[i]] <- fit_in$logLik
+log_lik_out[[i]] <- fit_out$logLik
+
+message(paste0("Network ", i))
+
 }
+
+
+
+  
+
+
 
