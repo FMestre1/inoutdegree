@@ -6,7 +6,7 @@ library(FWebs)
 eb1 <- create.fw.list(db ="eb", ecosyst = TRUE, spatial = TRUE, ref = TRUE)
 eb2 <- remove.non.numeric(eb1)
 
-names(eb1)
+names(eb1) 
 names(eb2)
 nrow(eb1$references)
 
@@ -51,7 +51,7 @@ wl1 <- create.fw.list(folder="C:/Users/FMest/Documents/0. Artigos/in_out_degree/
 
 names(wl1)
 wl1$code
-length(wl1$int_matrix)
+length(wl1$int_matrix) 
 wl1$int_matrix
 head(wl1$references)
 wl1$spatial_info
@@ -104,6 +104,9 @@ mangal_1$code
 #save(mangal_1, file="mangal_dataset.RData")
 
 ###########################################################################
+
+
+
 
 
 
