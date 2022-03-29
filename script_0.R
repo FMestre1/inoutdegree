@@ -182,21 +182,44 @@ View(metrics_and_references)
 nrow(metrics_and_references)
 
 ################################################################################
-
+#Create final data frame
 final_data_frame <- cbind(metrics_and_references, fit_data_frame)
 View(final_data_frame)
+
+################################################################################
+
+#Check one ecological network
 
 #mangal_collection_2 - matrix dataset
 #mangal_collection_igraph_2 - igraph collection
 
-#Check one
-
 library(igraph)
+library(minpack.lm)
+
 in_degree_list_TEST <- as.numeric(degree(mangal_collection_igraph_2[[1]], mode="in"))
 out_degree_list_TEST <- as.numeric(degree(mangal_collection_igraph_2[[1]], mode="out"))
 
 fit_in_TEST <- fit_power_law(in_degree_list_TEST)
 fit_out_TEST <- fit_power_law(out_degree_list_TEST)
 
-#plot(in_degree_list_TEST)
-#abline(fit_in_TEST)
+fit_in_TEST2 <- data.frame(
+                0:(length(in_degree_list_TEST)-1),
+                in_degree_list_TEST
+                )
+
+names(fit_in_TEST2) <- c("x", "y")
+
+fit1 <- minpack.lm::nlsLM(
+               y ~ b*x^a,
+               data = fit_in_TEST2, 
+               start = list(a=0.50, b=0.50),
+               control = nls.lm.control(maxiter = 100)
+               )
+
+plot(fit_in_TEST2, type="l", col="blue")
+lines(predict(fit1), col="red")
+
+
+
+
+
