@@ -181,7 +181,22 @@ metrics_and_references <- data.frame(
 View(metrics_and_references)
 nrow(metrics_and_references)
 
-##############################################################3
+################################################################################
 
 final_data_frame <- cbind(metrics_and_references, fit_data_frame)
 View(final_data_frame)
+
+#mangal_collection_2 - matrix dataset
+#mangal_collection_igraph_2 - igraph collection
+
+#Check one
+
+library(igraph)
+in_degree_list_TEST <- as.numeric(degree(mangal_collection_igraph_2[[1]], mode="in"))
+out_degree_list_TEST <- as.numeric(degree(mangal_collection_igraph_2[[1]], mode="out"))
+
+fit_in_TEST <- fit_power_law(in_degree_list_TEST)
+fit_out_TEST <- fit_power_law(out_degree_list_TEST)
+
+#plot(in_degree_list_TEST)
+#abline(fit_in_TEST)
