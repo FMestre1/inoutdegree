@@ -209,7 +209,8 @@ for(i in 1:length(mangal_collection_2)){
 
 #lapply(xy,class)
 
-world <- raster::shapefile("C:/Users/FMest/Documents/shape/ne_110m_admin_0_countries.shp")
+#world <- raster::shapefile("C:/Users/FMest/Documents/shape/ne_110m_admin_0_countries.shp")
+world <- raster::shapefile("D:/sig/world_continents.shp")
 
 library(sp)
 #
@@ -232,7 +233,7 @@ for(i in 1:length(xy)){
 }
 
 
-#Create final (non-spatial) data frame
+#Create final (non-spatial) data frame #########################################
 final_data_frame <- cbind(metrics_and_references, xy_2, fit_data_frame)
 View(final_data_frame)
 
@@ -255,7 +256,6 @@ plot(final_data_frame_SPATIAL, pch=16, col="red", add=TRUE)
 ################################################################################
 # EXTRACT HUMAN DISTURBANCE
 ################################################################################
-
 
 h_footprint <- raster::raster("D:/sig/wildareas-v3-2009-human-footprint-geotiff/wildareas-v3-2009-human-footprint.tif")
 cumulative_oceans <- raster::raster("D:/sig/Human impact oceans 2013/global_cumul_impact_2013_all_layers.tif")
@@ -280,6 +280,38 @@ plot(final_data_frame_SPATIAL, add=TRUE)
 
 #Extracting the values
 h_foot_vector <- raster::extract(h_footprint_P, final_data_frame_SPATIAL)
+h_foot_vector[h_foot_vector==128] <- NA #128 are NA
 c_ocean_vector <- raster::extract(cumulative_oceans_P, final_data_frame_SPATIAL)
+
+################################################################################
+
+#Are food webs over continents
+
+
+#Is the network over a continent?    
+final_data_frame_SPATIAL@proj4string <- world@proj4string # I know the spatialpointsdataframe is in WGS84
+over_continent <- sp::over(final_data_frame_SPATIAL, world)
+over_continent <- over_continent$scalerank
+over_continent[is.na(over_continent)] <- 0
+
+################################################################################
+#The final data frame
+################################################################################
+
+final_data_frame <- cbind(final_data_frame, over_continent, h_foot_vector, c_ocean_vector)
+
+names(final_data_frame)
+View(final_data_frame)
+
+final_30MAR_2022 <- final_data_frame
+
+save(final_30MAR_2022, file="final_30MAR_2022.RData")
+
+#plot(final_data_frame$alpha_in, final_data_frame$h_foot_vector)
+#plot(final_data_frame$alpha_out, final_data_frame$h_foot_vector)
+#
+#plot(final_data_frame$alpha_in, final_data_frame$c_ocean_vector)
+#plot(final_data_frame$alpha_out, final_data_frame$c_ocean_vector)
+
 
 
