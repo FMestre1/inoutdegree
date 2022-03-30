@@ -66,8 +66,8 @@ out_degree_list_2 <- list()
 
 for(i in 1:length(mangal_collection_igraph_2)){
   
-  in_degree_list_2[[i]] <- degree(mangal_collection_igraph_2[[i]], mode="in")
-  out_degree_list_2[[i]] <- degree(mangal_collection_igraph_2[[i]], mode="out")
+  in_degree_list_2[[i]] <- as.numeric(degree_distribution(mangal_collection_igraph_2[[i]], cumulative = TRUE, mode = "in"))
+  out_degree_list_2[[i]] <- as.numeric(degree_distribution(mangal_collection_igraph_2[[i]], cumulative = TRUE, mode = "out"))
   
   message(paste0("Concluded matrix ", i, "!"))
   
@@ -130,7 +130,6 @@ data_url <- c()
 
 for(i in 1:length(mangal_collection_2)){
   
-  
   mangal1 <- mangal_collection_2[[i]]
   try({ mangal1_summ <- summary(mangal1)})
   
@@ -181,45 +180,106 @@ metrics_and_references <- data.frame(
 View(metrics_and_references)
 nrow(metrics_and_references)
 
+
 ################################################################################
-#Create final data frame
-final_data_frame <- cbind(metrics_and_references, fit_data_frame)
+#CREATE SPATIA POINT DATA FRAME
+################################################################################
+
+
+###Extracting spatial information ##############################################
+
+#xy <- data.frame(matrix(ncol = 2))
+#names(xy) <- c("x","y")
+
+xy <- list()
+
+for(i in 1:length(mangal_collection_2)){
+  
+  #if POINT get VALUE
+  if(any(class(mangal_collection_2[[i]]$network$geom[[1]])=="POINT")){
+    xy[[i]] <- mangal_collection_2[[i]]$network$geom[[1]]
+  }
+  
+  #if polygon get centroid
+  if(any(class(mangal_collection_2[[i]]$network$geom[[1]])=="POLYGON")){
+    xy[[i]] <- st_centroid(mangal_collection_2[[i]]$network$geom[[1]])
+  }
+  
+}
+
+#lapply(xy,class)
+
+world <- raster::shapefile("C:/Users/FMest/Documents/shape/ne_110m_admin_0_countries.shp")
+
+library(sp)
+#
+plot(world)
+
+for(i in 1:length(xy)){
+  plot(xy[[i]], col="red", pch = 16, add=TRUE)
+  message(paste0("Plot network ", i, "!"))
+}
+
+#length(xy)
+
+xy_2 <- data.frame(matrix(ncol=2))
+names(xy_2) <- c("x","y")
+
+for(i in 1:length(xy)){
+  xy_net <- xy[[i]]  
+  xy_2[i,1] <- as.numeric(xy_net)[1]
+  xy_2[i,2] <- as.numeric(xy_net)[2]
+}
+
+
+#Create final (non-spatial) data frame
+final_data_frame <- cbind(metrics_and_references, xy_2, fit_data_frame)
 View(final_data_frame)
 
+
+#Remove those without spatial info (to create spatial points data frame)
+final_data_frame <- final_data_frame[!is.na(final_data_frame$x),]
+#nrow(final_data_frame)
+#View(final_data_frame)
+#names(final_data_frame)
+
+#Create spatial point data frame
+final_data_frame_SPATIAL <- SpatialPointsDataFrame(coords = final_data_frame[,10:11], 
+                       data = final_data_frame, 
+                       proj4string = CRS(as.character(NA)))
+
+#Plot
+plot(world)
+plot(final_data_frame_SPATIAL, pch=16, col="red", add=TRUE)
+
+################################################################################
+# EXTRACT HUMAN DISTURBANCE
 ################################################################################
 
-#Check one ecological network
 
-#mangal_collection_2 - matrix dataset
-#mangal_collection_igraph_2 - igraph collection
+h_footprint <- raster::raster("D:/sig/wildareas-v3-2009-human-footprint-geotiff/wildareas-v3-2009-human-footprint.tif")
+cumulative_oceans <- raster::raster("D:/sig/Human impact oceans 2013/global_cumul_impact_2013_all_layers.tif")
+#
+#Re-project
+raster::crs(h_footprint)
 
-library(igraph)
-library(minpack.lm)
+h_footprint_P <- raster::projectRaster(from = h_footprint,
+              crs = CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+              )
 
-in_degree_list_TEST <- as.numeric(degree(mangal_collection_igraph_2[[1]], mode="in"))
-out_degree_list_TEST <- as.numeric(degree(mangal_collection_igraph_2[[1]], mode="out"))
+cumulative_oceans_P <- raster::projectRaster(
+                              from = cumulative_oceans,
+                               crs = CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+)
 
-fit_in_TEST <- fit_power_law(in_degree_list_TEST)
-fit_out_TEST <- fit_power_law(out_degree_list_TEST)
+plot(h_footprint_P)
+plot(final_data_frame_SPATIAL, add=TRUE)
+#
+plot(cumulative_oceans_P)
+plot(final_data_frame_SPATIAL, add=TRUE)
 
-fit_in_TEST2 <- data.frame(
-                0:(length(in_degree_list_TEST)-1),
-                in_degree_list_TEST
-                )
-
-names(fit_in_TEST2) <- c("x", "y")
-
-fit1 <- minpack.lm::nlsLM(
-               y ~ b*x^a,
-               data = fit_in_TEST2, 
-               start = list(a=0.50, b=0.50),
-               control = nls.lm.control(maxiter = 100)
-               )
-
-plot(fit_in_TEST2, type="l", col="blue")
-lines(predict(fit1), col="red")
-
-
-
+#Extracting the values
+h_foot_vector <- raster::extract(h_footprint_P, final_data_frame_SPATIAL)
+c_ocean_vector <- raster::extract(cumulative_oceans_P, final_data_frame_SPATIAL)
 
 
