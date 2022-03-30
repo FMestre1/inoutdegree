@@ -264,13 +264,13 @@ cumulative_oceans <- raster::raster("D:/sig/Human impact oceans 2013/global_cumu
 raster::crs(h_footprint)
 
 h_footprint_P <- raster::projectRaster(from = h_footprint,
-              crs = CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+                              crs = CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
               )
 
 cumulative_oceans_P <- raster::projectRaster(
-                              from = cumulative_oceans,
+                               from = cumulative_oceans,
                                crs = CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
-)
+              )
 
 plot(h_footprint_P)
 plot(final_data_frame_SPATIAL, add=TRUE)
@@ -285,9 +285,6 @@ c_ocean_vector <- raster::extract(cumulative_oceans_P, final_data_frame_SPATIAL)
 
 ################################################################################
 
-#Are food webs over continents
-
-
 #Is the network over a continent?    
 final_data_frame_SPATIAL@proj4string <- world@proj4string # I know the spatialpointsdataframe is in WGS84
 over_continent <- sp::over(final_data_frame_SPATIAL, world)
@@ -299,11 +296,10 @@ over_continent[is.na(over_continent)] <- 0
 ################################################################################
 
 final_data_frame <- cbind(final_data_frame, over_continent, h_foot_vector, c_ocean_vector)
-
-names(final_data_frame)
-View(final_data_frame)
+#View(final_data_frame)
 
 final_30MAR_2022 <- final_data_frame
+View(final_30MAR_2022)
 
 save(final_30MAR_2022, file="final_30MAR_2022.RData")
 
@@ -312,6 +308,4 @@ save(final_30MAR_2022, file="final_30MAR_2022.RData")
 #
 #plot(final_data_frame$alpha_in, final_data_frame$c_ocean_vector)
 #plot(final_data_frame$alpha_out, final_data_frame$c_ocean_vector)
-
-
 
