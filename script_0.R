@@ -53,11 +53,12 @@ message(paste0("Concluded matrix ", i, "!"))
 
 }
 
-#Which dont have only degrees 0 and 1
+#Which don't have only degrees 0 and 1
 non_excluded <- as.numeric(lapply(in_degree_list, sum)) > as.numeric(lapply(in_degree_list, length))
 mangal_collection_igraph_2 <- mangal_collection_igraph[non_excluded]
 table(non_excluded)
 length(mangal_collection_igraph_2)
+save(mangal_collection_igraph_2, file="mangal_collection_igraph_2.RData")
 
 ##
 
@@ -163,7 +164,6 @@ first_author <- as.character(first_author)
 paper_url <- as.character(paper_url)
 data_url <- as.character(data_url)
 
-
 ###Data frame with metrics and reference to which network ######################
 metrics_and_references <- data.frame(
   nnodes,
@@ -177,14 +177,12 @@ metrics_and_references <- data.frame(
   data_url
   )
 
-View(metrics_and_references)
-nrow(metrics_and_references)
-
+#View(metrics_and_references)
+#nrow(metrics_and_references)
 
 ################################################################################
-#CREATE SPATIA POINT DATA FRAME
+#CREATE SPATIAL POINT DATA FRAME
 ################################################################################
-
 
 ###Extracting spatial information ##############################################
 
@@ -233,8 +231,26 @@ for(i in 1:length(xy)){
 }
 
 
+#Adding network number, dataset id and network description from mangal
+network_number <- c()
+network_description <- c()
+dataset_id <- c()
+
+for(i in 1:length(mangal_collection_2)){
+  
+  network_number[i] <- mangal_collection_2[[i]]$network$network_id
+  network_description[i] <- mangal_collection[[i]]$network$description
+  dataset_id[i] <- mangal_collection_2[[i]]$network$dataset_id
+  
+}
+
+network_number <- paste0("Network #", network_number)
+dataset_id <- paste0("Dataset #", dataset_id)
+
+#length(dataset_id)
+
 #Create final (non-spatial) data frame #########################################
-final_data_frame <- cbind(metrics_and_references, xy_2, fit_data_frame)
+final_data_frame <- cbind(network_number, dataset_id, metrics_and_references[,c(1:4)], xy_2, fit_data_frame, network_description, metrics_and_references[,c(5:9)])
 View(final_data_frame)
 
 
@@ -244,10 +260,13 @@ final_data_frame <- final_data_frame[!is.na(final_data_frame$x),]
 #View(final_data_frame)
 #names(final_data_frame)
 
+#Select the same networks from the mangal collection
+mangal_collection_3 <- mangal_collection_2[!is.na(xy_2$x)]
+
 #Create spatial point data frame
-final_data_frame_SPATIAL <- SpatialPointsDataFrame(coords = final_data_frame[,10:11], 
+final_data_frame_SPATIAL <- SpatialPointsDataFrame(coords = final_data_frame[,7:8], 
                        data = final_data_frame, 
-                       proj4string = CRS(as.character(NA)))
+                       proj4string = world@proj4string)
 
 #Plot
 plot(world)
@@ -286,7 +305,6 @@ c_ocean_vector <- raster::extract(cumulative_oceans_P, final_data_frame_SPATIAL)
 ################################################################################
 
 #Is the network over a continent?    
-final_data_frame_SPATIAL@proj4string <- world@proj4string # I know the spatialpointsdataframe is in WGS84
 over_continent <- sp::over(final_data_frame_SPATIAL, world)
 over_continent <- over_continent$scalerank
 over_continent[is.na(over_continent)] <- 0
@@ -295,17 +313,10 @@ over_continent[is.na(over_continent)] <- 0
 #The final data frame
 ################################################################################
 
-final_data_frame <- cbind(final_data_frame, over_continent, h_foot_vector, c_ocean_vector)
-#View(final_data_frame)  
+final_data_frame2 <- cbind(final_data_frame,over_continent)
 
-final_30MAR_2022 <- final_data_frame
-View(final_30MAR_2022)
+final_30MAR_2022 <- final_data_frame2
+nrow(final_30MAR_2022)#How many ecological networks?
+View(final_30MAR_2022) 
 
 save(final_30MAR_2022, file="final_30MAR_2022.RData")
-
-#plot(final_data_frame$alpha_in, final_data_frame$h_foot_vector)
-#plot(final_data_frame$alpha_out, final_data_frame$h_foot_vector)
-#
-#plot(final_data_frame$alpha_in, final_data_frame$c_ocean_vector)
-#plot(final_data_frame$alpha_out, final_data_frame$c_ocean_vector)
-
