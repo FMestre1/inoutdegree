@@ -296,7 +296,7 @@ over_continent[is.na(over_continent)] <- 0
 ################################################################################
 
 final_data_frame <- cbind(final_data_frame, over_continent, h_foot_vector, c_ocean_vector)
-#View(final_data_frame)
+#View(final_data_frame)  
 
 final_30MAR_2022 <- final_data_frame
 View(final_30MAR_2022)
