@@ -313,7 +313,7 @@ over_continent[is.na(over_continent)] <- 0
 #The final data frame
 ################################################################################
 
-final_data_frame2 <- cbind(final_data_frame,over_continent)
+final_data_frame2 <- cbind(final_data_frame,h_foot_vector, c_ocean_vector, over_continent)
 
 final_30MAR_2022 <- final_data_frame2
 nrow(final_30MAR_2022)#How many ecological networks?
