@@ -319,4 +319,6 @@ final_30MAR_2022 <- final_data_frame2
 nrow(final_30MAR_2022)#How many ecological networks?
 View(final_30MAR_2022) 
 
-save(final_30MAR_2022, file="final_30MAR_2022.RData")
+View(final_30MAR_2022)
+nrow(final_30MAR_2022)
+#save(final_30MAR_2022, file="final_30MAR_2022.RData")
