@@ -5,102 +5,186 @@
 
 library(rmangal)
 library(igraph)
+library(sp)
 
 #"mutualism", "predation", "herbivory", "scavenger", "detritivore"
 
 mangal_mutualism <- search_interactions(type = "mutualism", verbose = TRUE)
 mangal_predation <- search_interactions(type = "predation", verbose = TRUE)
 mangal_herbivory <- search_interactions(type = "herbivory", verbose = TRUE)
-mangal_scavenger <- search_interactions(type = "scavenger", verbose = TRUE)
-mangal_detritivore <- search_interactions(type = "detritivore", verbose = TRUE)
+#mangal_scavenger <- search_interactions(type = "scavenger", verbose = TRUE)
+#mangal_detritivore <- search_interactions(type = "detritivore", verbose = TRUE)
+
+View(mangal_all)
 
 #Select directed
-mangal_mutualism_dir <-  mangal_mutualism[mangal_mutualism$direction == "directed",]
-mangal_predation_dir <- mangal_predation[mangal_predation$direction == "directed",]
-mangal_herbivory_dir <- mangal_herbivory[mangal_herbivory$direction == "directed",]
-mangal_scavenger_dir <- mangal_scavenger[mangal_scavenger$direction == "directed",]
-mangal_detritivore_dir <- mangal_detritivore[mangal_detritivore$direction == "directed",]
+#mangal_mutualism_dir <-  mangal_mutualism[mangal_mutualism$direction == "directed",]
+#mangal_predation_dir <- mangal_predation[mangal_predation$direction == "directed",]
+#mangal_herbivory_dir <- mangal_herbivory[mangal_herbivory$direction == "directed",]
+#mangal_scavenger_dir <- mangal_scavenger[mangal_scavenger$direction == "directed",]
+#mangal_detritivore_dir <- mangal_detritivore[mangal_detritivore$direction == "directed",]
 
-mangal_collection_mutualism_dir <- get_collection(mangal_mutualism_dir, as_sf = TRUE, verbose = TRUE)
-mangal_collection_predation_dir <- get_collection(mangal_predation_dir, as_sf = TRUE, verbose = TRUE)
-mangal_collection_herbivory_dir <- get_collection(mangal_herbivory_dir, as_sf = TRUE, verbose = TRUE)
-mangal_collection_scavenger_dir <- get_collection(mangal_scavenger_dir, as_sf = TRUE, verbose = TRUE)
-mangal_collection_detritivore_dir <- get_collection(mangal_detritivore_dir, as_sf = TRUE, verbose = TRUE)
+#mangal_all <- rbind(mangal_mutualism_dir,
+#                    mangal_predation_dir,
+#                    mangal_herbivory_dir,
+#                    mangal_scavenger_dir,
+#                    mangal_detritivore_dir)
 
-mangal_collection <- combine_mgNetworks(mangal_collection_mutualism_dir, mangal_collection_predation_dir, 
-                                        mangal_collection_herbivory_dir, mangal_collection_scavenger_dir, 
-                                        mangal_collection_detritivore_dir)
+mutualistic_networks <- get_collection(mangal_mutualism, as_sf = TRUE, verbose = TRUE)
+#mutualistic_networks <- unique (mutualistic_networks)
+#
+mangal_collection_predation <- get_collection(mangal_predation, as_sf = TRUE, verbose = TRUE)
+mangal_collection_herbivory <- get_collection(mangal_herbivory, as_sf = TRUE, verbose = TRUE)
+antagonistic_networks <- combine_mgNetworks(mangal_collection_predation, mangal_collection_herbivory)
+antagonistic_networks <- unique(antagonistic_networks)
+
+#mangal_collection_scavenger_dir <- get_collection(mangal_scavenger_dir, as_sf = TRUE, verbose = TRUE)
+#mangal_collection_detritivore_dir <- get_collection(mangal_detritivore_dir, as_sf = TRUE, verbose = TRUE)
+
+#mangal_collection <- combine_mgNetworks(mangal_collection_mutualism_dir, mangal_collection_predation_dir, 
+#                                        mangal_collection_herbivory_dir, mangal_collection_scavenger_dir, 
+#                                        mangal_collection_detritivore_dir)
+
 
 #Save
-length(mangal_collection)
-save(mangal_collection, file="mangal_dataset_mangal.RData")
+save(mutualistic_networks, file="mutualistic_networks.RData")
+save(antagonistic_networks, file="antagonistic_networks.RData")
+
 
 #Convert to igraph
-mangal_collection_igraph <- as.igraph(mangal_collection)
-length(mangal_collection_igraph)
-save(mangal_collection_igraph, file="mangal_dataset_igraph.RData")
+mutualistic_networks_igraph <- as.igraph(mutualistic_networks)
+class(antagonistic_networks) <- class(mutualistic_networks)
+antagonistic_networks_igraph <- as.igraph(antagonistic_networks)
+#
+save(mutualistic_networks_igraph, file="mutualistic_networks_igraph.RData")
+save(antagonistic_networks_igraph, file="antagonistic_networks_igraph.RData")
 
 #Getting the "in" and "out" degree of all networks
-in_degree_list <- list()
-out_degree_list <- list()
+in_degree_list_MUT <- list()
+out_degree_list_MUT <- list()
+#
+in_degree_list_ANT <- list()
+out_degree_list_ANT <- list()
+#
+for(i in 1:length(mutualistic_networks_igraph)){
 
-for(i in 1:length(mangal_collection_igraph)){
-
-in_degree_list[[i]] <- degree(mangal_collection_igraph[[i]], mode="in")
-out_degree_list[[i]] <- degree(mangal_collection_igraph[[i]], mode="out")
+in_degree_list_MUT[[i]] <- degree(mutualistic_networks_igraph[[i]], mode="in")
+out_degree_list_MUT[[i]] <- degree(mutualistic_networks_igraph[[i]], mode="out")
   
 message(paste0("Concluded matrix ", i, "!"))
 
 }
-
-#Which don't have only degrees 0 and 1
-non_excluded <- as.numeric(lapply(in_degree_list, sum)) > as.numeric(lapply(in_degree_list, length))
-mangal_collection_igraph_2 <- mangal_collection_igraph[non_excluded]
-table(non_excluded)
-length(mangal_collection_igraph_2)
-save(mangal_collection_igraph_2, file="mangal_collection_igraph_2.RData")
-
-##
-
-in_degree_list_2 <- list()
-out_degree_list_2 <- list()
-
-for(i in 1:length(mangal_collection_igraph_2)){
+#
+for(i in 1:length(antagonistic_networks_igraph)){
   
-  in_degree_list_2[[i]] <- as.numeric(degree_distribution(mangal_collection_igraph_2[[i]], cumulative = TRUE, mode = "in"))
-  out_degree_list_2[[i]] <- as.numeric(degree_distribution(mangal_collection_igraph_2[[i]], cumulative = TRUE, mode = "out"))
+  in_degree_list_ANT[[i]] <- degree(antagonistic_networks_igraph[[i]], mode="in")
+  out_degree_list_ANT[[i]] <- degree(antagonistic_networks_igraph[[i]], mode="out")
   
   message(paste0("Concluded matrix ", i, "!"))
   
 }
 
-alpha_in <- c()
-alpha_out <- c()
-p_in <- c()
-p_out <- c()
-log_lik_in <- c()
-log_lik_out <- c()
 
-for(i in 1:length(mangal_collection_igraph_2)){
+#Which don't have only degrees 0 and 1
+#non_excluded_MUT <- as.numeric(lapply(in_degree_list, sum)) > as.numeric(lapply(in_degree_list, length))
+#mangal_collection_igraph_2 <- mangal_collection_igraph[non_excluded]
+#table(non_excluded)
+#length(mangal_collection_igraph_2)
+#save(mangal_collection_igraph_2, file="mangal_collection_igraph_2.RData")
+
+##
+
+in_degree_list_2_MUT <- list()
+out_degree_list_2_MUT <- list()
+#
+in_degree_list_2_ANT <- list()
+out_degree_list_2_ANT <- list()
+#
+for(i in 1:length(mutualistic_networks_igraph)){
   
-  fit_in <- fit_power_law(in_degree_list_2[[i]]+1)
-  fit_out <- fit_power_law(out_degree_list_2[[i]]+1)
+  in_degree_list_2_MUT[[i]] <- as.numeric(degree_distribution(mutualistic_networks_igraph[[i]], cumulative = TRUE, mode = "in"))
+  out_degree_list_2_MUT[[i]] <- as.numeric(degree_distribution(mutualistic_networks_igraph[[i]], cumulative = TRUE, mode = "out"))
+  
+  message(paste0("Concluded matrix ", i, "!"))
+  
+}
+#
+for(i in 1:length(antagonistic_networks_igraph)){
+  
+  in_degree_list_2_ANT[[i]] <- as.numeric(degree_distribution(antagonistic_networks_igraph[[i]], cumulative = TRUE, mode = "in"))
+  out_degree_list_2_ANT[[i]] <- as.numeric(degree_distribution(antagonistic_networks_igraph[[i]], cumulative = TRUE, mode = "out"))
+  
+  message(paste0("Concluded matrix ", i, "!"))
+  
+}
+
+
+alpha_in_MUT <- c()
+alpha_out_MUT <- c()
+p_in_MUT <- c()
+p_out_MUT <- c()
+log_lik_in_MUT <- c()
+log_lik_out_MUT <- c()
+#
+alpha_in_ANT <- c()
+alpha_out_ANT <- c()
+p_in_ANT <- c()
+p_out_ANT <- c()
+log_lik_in_ANT <- c()
+log_lik_out_ANT <- c()
+
+for(i in 1:length(mutualistic_networks_igraph)){
+  
+  fit_in <- fit_power_law(in_degree_list_2_MUT[[i]]+1)
+  fit_out <- fit_power_law(out_degree_list_2_MUT[[i]]+1)
   
   
-  alpha_in[i] <- fit_in$alpha
-  alpha_out[i] <- fit_out$alpha
-  p_in[i] <- fit_in$KS.p
-  p_out[i] <- fit_out$KS.p
-  log_lik_in[i] <- fit_in$logLik
-  log_lik_out[i] <- fit_out$logLik
+  alpha_in_MUT[i] <- fit_in$alpha
+  alpha_out_MUT[i] <- fit_out$alpha
+  p_in_MUT[i] <- fit_in$KS.p
+  p_out_MUT[i] <- fit_out$KS.p
+  log_lik_in_MUT[i] <- fit_in$logLik
+  log_lik_out_MUT[i] <- fit_out$logLik
   
   message(paste0("Network ", i))
   
 }
 
+for(i in 1:length(antagonistic_networks_igraph)){
+  
+  fit_in <- fit_power_law(in_degree_list_2_ANT[[i]]+1)
+  fit_out <- fit_power_law(out_degree_list_2_ANT[[i]]+1)
+  
+  
+  alpha_in_ANT[i] <- fit_in$alpha
+  alpha_out_ANT[i] <- fit_out$alpha
+  p_in_ANT[i] <- fit_in$KS.p
+  p_out_ANT[i] <- fit_out$KS.p
+  log_lik_in_ANT[i] <- fit_in$logLik
+  log_lik_out_ANT[i] <- fit_out$logLik
+  
+  message(paste0("Network ", i))
+  
+}
+
+#Combine
+
+type_MUT <- rep("mutualistic",length(mutualistic_networks_igraph))
+type_ANT <- rep("antagonistic",length(antagonistic_networks_igraph))
+type <- c(type_MUT, type_ANT)
+
+alpha_in <- c(alpha_in_MUT, alpha_in_ANT)
+alpha_out <- c(alpha_out_MUT, alpha_out_ANT)
+p_in <- c(p_in_MUT, p_in_ANT)
+p_out <- c(p_out_MUT, p_out_ANT)
+log_lik_in <- c(log_lik_in_MUT, log_lik_in_ANT)
+log_lik_out <- c(log_lik_out_MUT, log_lik_out_ANT)
+
+
 ###Data frame with in and out degree distributiin fit ##########################
 
 fit_data_frame <- data.frame(
+  type,
   alpha_in,
   alpha_out,
   p_in,
@@ -109,44 +193,79 @@ fit_data_frame <- data.frame(
   log_lik_out
 )
 
-View(fit_data_frame)
-nrow(fit_data_frame)
-
+#View(fit_data_frame)
+#nrow(fit_data_frame)
 
 #Using mangal to get other information
-length(mangal_collection)
-length(non_excluded)
-mangal_collection_2 <- mangal_collection[non_excluded]
-length(mangal_collection_2)
+#length(mangal_collection)
+#length(non_excluded)
+#mangal_collection_2 <- mangal_collection[non_excluded]
+#length(mangal_collection_2)
 
-nnodes <- c()
-nedges <- c()
-connectance <- c()
-linkage_density <- c()
-doi <- c()
-year <- c()
-first_author <- c()
-paper_url <- c()
-data_url <- c()
+nnodes_MUT <- c()
+nedges_MUT <- c()
+connectance_MUT <- c()
+linkage_density_MUT <- c()
+doi_MUT <- c()
+year_MUT <- c()
+first_author_MUT <- c()
+paper_url_MUT <- c()
+data_url_MUT <- c()
+#
+nnodes_ANT <- c()
+nedges_ANT <- c()
+connectance_ANT <- c()
+linkage_density_ANT <- c()
+doi_ANT <- c()
+year_ANT <- c()
+first_author_ANT <- c()
+paper_url_ANT <- c()
+data_url_ANT <- c()
 
-for(i in 1:length(mangal_collection_2)){
+
+for(i in 1:length(mutualistic_networks)){
   
-  mangal1 <- mangal_collection_2[[i]]
+  mangal1 <- mutualistic_networks[[i]]
   try({ mangal1_summ <- summary(mangal1)})
   
-  if (exists("mangal1_summ")) {nnodes[[i]] <- mangal1_summ$n_nodes
-                              } else nnodes[[i]] <- nrow(mangal1$nodes)
-  if (exists("mangal1_summ")) {nedges[[i]] <- mangal1_summ$n_edges
-                              } else nedges[[i]] <- nrow(mangal1$interactions)
-  if (exists("mangal1_summ")) {connectance[[i]] <- mangal1_summ$connectance
-                              } else connectance[[i]] <- NA
-  if (exists("mangal1_summ")) {linkage_density[[i]] <- mangal1_summ$linkage_density
-                              } else linkage_density[[i]] <- NA
-  doi[[i]] <- mangal1$reference$doi
-  year[[i]] <- mangal1$reference$year
-  first_author[[i]] <- mangal1$reference$first_author
-  paper_url[[i]] <- mangal1$reference$paper_url
-  data_url[[i]] <- mangal1$reference$data_url
+  if (exists("mangal1_summ")) {nnodes_MUT[[i]] <- mangal1_summ$n_nodes
+                              } else nnodes_MUT[[i]] <- nrow(mangal1$nodes)
+  if (exists("mangal1_summ")) {nedges_MUT[[i]] <- mangal1_summ$n_edges
+                              } else nedges_MUT[[i]] <- nrow(mangal1$interactions)
+  if (exists("mangal1_summ")) {connectance_MUT[[i]] <- mangal1_summ$connectance
+                              } else connectance_MUT[[i]] <- NA
+  if (exists("mangal1_summ")) {linkage_density_MUT[[i]] <- mangal1_summ$linkage_density
+                              } else linkage_density_MUT[[i]] <- NA
+  doi_MUT[[i]] <- mangal1$reference$doi
+  year_MUT[[i]] <- mangal1$reference$year
+  first_author_MUT[[i]] <- mangal1$reference$first_author
+  paper_url_MUT[[i]] <- mangal1$reference$paper_url
+  data_url_MUT[[i]] <- mangal1$reference$data_url
+  
+  message(paste0("Network ", i))
+  
+  rm(mangal1_summ)
+  
+}
+#
+for(i in 1:length(antagonistic_networks)){
+  
+  mangal1 <- antagonistic_networks[[i]]
+  try({ mangal1_summ <- summary(mangal1)})
+  
+  if (exists("mangal1_summ")) {nnodes_ANT[[i]] <- mangal1_summ$n_nodes
+  } else nnodes_ANT[[i]] <- nrow(mangal1$nodes)
+  if (exists("mangal1_summ")) {nedges_ANT[[i]] <- mangal1_summ$n_edges
+  } else nedges_ANT[[i]] <- nrow(mangal1$interactions)
+  if (exists("mangal1_summ")) {connectance_ANT[[i]] <- mangal1_summ$connectance
+  } else connectance_ANT[[i]] <- NA
+  if (exists("mangal1_summ")) {linkage_density_ANT[[i]] <- mangal1_summ$linkage_density
+  } else linkage_density_ANT[[i]] <- NA
+  doi_ANT[[i]] <- mangal1$reference$doi
+  year_ANT[[i]] <- mangal1$reference$year
+  first_author_ANT[[i]] <- mangal1$reference$first_author
+  paper_url_ANT[[i]] <- mangal1$reference$paper_url
+  data_url_ANT[[i]] <- mangal1$reference$data_url
   
   message(paste0("Network ", i))
   
@@ -154,15 +273,36 @@ for(i in 1:length(mangal_collection_2)){
   
 }
 
-nnodes <- as.numeric(nnodes)
-nedges <- as.numeric(nedges)
-connectance <- as.numeric(connectance)
-linkage_density <- as.numeric(linkage_density)
-doi <- as.character(doi)
-year <- as.numeric(year)
-first_author <- as.character(first_author)
-paper_url <- as.character(paper_url)
-data_url <- as.character(data_url)
+
+nnodes_MUT <- as.numeric(nnodes_MUT)
+nedges_MUT <- as.numeric(nedges_MUT)
+connectance_MUT <- as.numeric(connectance_MUT)
+linkage_density_MUT <- as.numeric(linkage_density_MUT)
+doi_MUT <- as.character(doi_MUT)
+year_MUT <- as.numeric(year_MUT)
+first_author_MUT <- as.character(first_author_MUT)
+paper_url_MUT <- as.character(paper_url_MUT)
+data_url_MUT <- as.character(data_url_MUT)
+#
+nnodes_ANT <- as.numeric(nnodes_ANT)
+nedges_ANT <- as.numeric(nedges_ANT)
+connectance_ANT <- as.numeric(connectance_ANT)
+linkage_density_ANT <- as.numeric(linkage_density_ANT)
+doi_ANT <- as.character(doi_ANT)
+year_ANT <- as.numeric(year_ANT)
+first_author_ANT <- as.character(first_author_ANT)
+paper_url_ANT <- as.character(paper_url_ANT)
+data_url_ANT <- as.character(data_url_ANT)
+#
+nnodes <- c(nnodes_MUT, nnodes_ANT)
+nedges <- c(nedges_MUT, nedges_ANT)
+connectance <- c(connectance_MUT, connectance_ANT)
+linkage_density <- c(linkage_density_MUT, linkage_density_ANT)
+doi <- c(doi_MUT, doi_ANT)
+year <- c(year_MUT, year_ANT)
+first_author <- c(first_author_MUT, first_author_ANT)
+paper_url <- c(paper_url_MUT, paper_url_ANT)
+data_url <- c(data_url_MUT, data_url_ANT)
 
 ###Data frame with metrics and reference to which network ######################
 metrics_and_references <- data.frame(
@@ -189,18 +329,33 @@ metrics_and_references <- data.frame(
 #xy <- data.frame(matrix(ncol = 2))
 #names(xy) <- c("x","y")
 
-xy <- list()
+xy_MUT <- list()
+xy_ANT <- list()
 
-for(i in 1:length(mangal_collection_2)){
+for(i in 1:length(mutualistic_networks)){
   
   #if POINT get VALUE
-  if(any(class(mangal_collection_2[[i]]$network$geom[[1]])=="POINT")){
-    xy[[i]] <- mangal_collection_2[[i]]$network$geom[[1]]
+  if(any(class(mutualistic_networks[[i]]$network$geom[[1]])=="POINT")){
+    xy_MUT[[i]] <- mutualistic_networks[[i]]$network$geom[[1]]
   }
   
   #if polygon get centroid
-  if(any(class(mangal_collection_2[[i]]$network$geom[[1]])=="POLYGON")){
-    xy[[i]] <- st_centroid(mangal_collection_2[[i]]$network$geom[[1]])
+  if(any(class(mutualistic_networks[[i]]$network$geom[[1]])=="POLYGON")){
+    xy_MUT[[i]] <- st_centroid(mutualistic_networks[[i]]$network$geom[[1]])
+  }
+  
+}
+#
+for(i in 1:length(antagonistic_networks)){
+  
+  #if POINT get VALUE
+  if(any(class(antagonistic_networks[[i]]$network$geom[[1]])=="POINT")){
+    xy_ANT[[i]] <- antagonistic_networks[[i]]$network$geom[[1]]
+  }
+  
+  #if polygon get centroid
+  if(any(class(antagonistic_networks[[i]]$network$geom[[1]])=="POLYGON")){
+    xy_ANT[[i]] <- st_centroid(antagonistic_networks[[i]]$network$geom[[1]])
   }
   
 }
@@ -210,10 +365,6 @@ for(i in 1:length(mangal_collection_2)){
 #world <- raster::shapefile("C:/Users/FMest/Documents/shape/ne_110m_admin_0_countries.shp")
 world <- raster::shapefile("D:/sig/world_continents.shp")
 
-library(sp)
-#
-plot(world)
-
 for(i in 1:length(xy)){
   plot(xy[[i]], col="red", pch = 16, add=TRUE)
   message(paste0("Plot network ", i, "!"))
@@ -221,29 +372,58 @@ for(i in 1:length(xy)){
 
 #length(xy)
 
-xy_2 <- data.frame(matrix(ncol=2))
-names(xy_2) <- c("x","y")
+xy_2_MUT <- data.frame(matrix(ncol=2))
+names(xy_2_MUT) <- c("x","y")
+#
+xy_2_ANT <- data.frame(matrix(ncol=2))
+names(xy_2_ANT) <- c("x","y")
 
-for(i in 1:length(xy)){
-  xy_net <- xy[[i]]  
-  xy_2[i,1] <- as.numeric(xy_net)[1]
-  xy_2[i,2] <- as.numeric(xy_net)[2]
+for(i in 1:length(xy_MUT)){
+  xy_net <- xy_MUT[[i]]  
+  xy_2_MUT[i,1] <- as.numeric(xy_net)[1]
+  xy_2_MUT[i,2] <- as.numeric(xy_net)[2]
+}
+#
+for(i in 1:length(xy_ANT)){
+  xy_net <- xy_ANT[[i]]  
+  xy_2_ANT[i,1] <- as.numeric(xy_net)[1]
+  xy_2_ANT[i,2] <- as.numeric(xy_net)[2]
 }
 
+
+xy_2 <- rbind(xy_2_MUT, xy_2_ANT)
+nrow(xy_2)
 
 #Adding network number, dataset id and network description from mangal
-network_number <- c()
-network_description <- c()
-dataset_id <- c()
+network_number_MUT <- c()
+network_description_MUT <- c()
+dataset_id_MUT <- c()
+#
+network_number_ANT <- c()
+network_description_ANT <- c()
+dataset_id_ANT <- c()
 
-for(i in 1:length(mangal_collection_2)){
+for(i in 1:length(mutualistic_networks)){
+
+  network_number_MUT[i] <- mutualistic_networks[[i]]$network$network_id
+  network_description_MUT[i] <- mutualistic_networks[[i]]$network$description
+  dataset_id_MUT[i] <- mutualistic_networks[[i]]$network$dataset_id
+
+}
+#
+for(i in 1:length(antagonistic_networks)){
   
-  network_number[i] <- mangal_collection_2[[i]]$network$network_id
-  network_description[i] <- mangal_collection[[i]]$network$description
-  dataset_id[i] <- mangal_collection_2[[i]]$network$dataset_id
+  network_number_ANT[i] <- antagonistic_networks[[i]]$network$network_id
+  network_description_ANT[i] <- antagonistic_networks[[i]]$network$description
+  dataset_id_ANT[i] <- antagonistic_networks[[i]]$network$dataset_id
   
 }
 
+network_number <- c(network_number_MUT, network_number_ANT)
+network_description <- c(network_description_MUT, network_description_ANT)
+dataset_id <- c(dataset_id_MUT, dataset_id_ANT)
+
+#
 network_number <- paste0("Network #", network_number)
 dataset_id <- paste0("Dataset #", dataset_id)
 
@@ -251,8 +431,8 @@ dataset_id <- paste0("Dataset #", dataset_id)
 
 #Create final (non-spatial) data frame #########################################
 final_data_frame <- cbind(network_number, dataset_id, metrics_and_references[,c(1:4)], xy_2, fit_data_frame, network_description, metrics_and_references[,c(5:9)])
-View(final_data_frame)
-
+#View(final_data_frame)
+#nrow(final_data_frame)
 
 #Remove those without spatial info (to create spatial points data frame)
 final_data_frame <- final_data_frame[!is.na(final_data_frame$x),]
@@ -261,16 +441,19 @@ final_data_frame <- final_data_frame[!is.na(final_data_frame$x),]
 #names(final_data_frame)
 
 #Select the same networks from the mangal collection
-mangal_collection_3 <- mangal_collection_2[!is.na(xy_2$x)]
+#mangal_collection_3 <- mangal_collection_2[!is.na(xy_2$x)]
 
 #Create spatial point data frame
 final_data_frame_SPATIAL <- SpatialPointsDataFrame(coords = final_data_frame[,7:8], 
                        data = final_data_frame, 
                        proj4string = world@proj4string)
 
+#nrow(final_data_frame_SPATIAL)
+
 #Plot
 plot(world)
-plot(final_data_frame_SPATIAL, pch=16, col="red", add=TRUE)
+
+plot(final_data_frame_SPATIAL, pch=16, col=as.factor(final_data_frame_SPATIAL$type), add=TRUE)
 
 ################################################################################
 # EXTRACT HUMAN DISTURBANCE
@@ -281,7 +464,7 @@ cumulative_oceans <- raster::raster("D:/sig/Human impact oceans 2013/global_cumu
 #
 #Re-project
 raster::crs(h_footprint)
-
+#AQUI
 h_footprint_P <- raster::projectRaster(from = h_footprint,
                               crs = CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
               )
@@ -313,10 +496,54 @@ over_continent[is.na(over_continent)] <- 0
 #The final data frame
 ################################################################################
 
-final_data_frame2 <- cbind(final_data_frame,h_foot_vector, c_ocean_vector, over_continent)
+final_data_frame2 <- cbind(final_data_frame
+                           ,h_foot_vector, 
+                           c_ocean_vector, 
+                           over_continent)
 
-final_30MAR_2022 <- final_data_frame2
-nrow(final_30MAR_2022)#How many ecological networks?
-View(final_30MAR_2022) 
+#save(final_data_frame2, file="final_29ABR_2022.RData")
 
-#save(final_30MAR_2022, file="final_30MAR_2022.RData")
+################################################################################
+## Add ecosystem
+
+
+final_data_frame3 <- data.frame(final_data_frame2,NA)
+names(final_data_frame3)[25] <- "ecosystem"
+
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "ocean", negate = FALSE),]$ecosystem <- "marine"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "Ocean", negate = FALSE),]$ecosystem <- "marine"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "Seychelles, Indian Ocean", negate = FALSE),]$ecosystem <- "terrestrial"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "Plant-pollinator", negate = FALSE),]$ecosystem <- "terrestrial"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "intertidal", negate = FALSE),]$ecosystem <- "coastal"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "shore", negate = FALSE),]$ecosystem <- "coastal"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "lake", negate = FALSE),]$ecosystem <- "freshwater"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "Lake", negate = FALSE),]$ecosystem <- "freshwater"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "Plant-polinator", negate = FALSE),]$ecosystem <- "terrestrial"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "flower", negate = FALSE),]$ecosystem <- "terrestrial"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "forest", negate = FALSE),]$ecosystem <- "terrestrial"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "Pollination", negate = FALSE),]$ecosystem <- "terrestrial"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "fishery", negate = FALSE),]$ecosystem <- "marine"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "river", negate = FALSE),]$ecosystem <- "freshwater"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "mangrove", negate = FALSE),]$ecosystem <- "coastal"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "birds", negate = FALSE),]$ecosystem <- "terrestrial"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "salt marsh", negate = FALSE),]$ecosystem <- "coastal"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "-pollinator", negate = FALSE),]$ecosystem <- "terrestrial"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "stream", negate = FALSE),]$ecosystem <- "freshwater"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "Current", negate = FALSE),]$ecosystem <- "marine"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "Gulf", negate = FALSE),]$ecosystem <- "coastal"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "oak", negate = FALSE),]$ecosystem <- "terrestrial"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "Sea", negate = FALSE),]$ecosystem <- "marine"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "tributaries", negate = FALSE),]$ecosystem <- "freshwater"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "deep-sea", negate = FALSE),]$ecosystem <- "marine"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "estuary", negate = FALSE),]$ecosystem <- "coastal"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "insect", negate = FALSE),]$ecosystem <- "terrestrial"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "marine", negate = FALSE),]$ecosystem <- "marine"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "kelp", negate = FALSE),]$ecosystem <- "marine"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "pine logs", negate = FALSE),]$ecosystem <- "terrestrial"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "Insect", negate = FALSE),]$ecosystem <- "terrestrial"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "anemonefish", negate = FALSE),]$ecosystem <- "marine"
+final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "fruit", negate = FALSE),]$ecosystem <- "terrestrial"
+
+#final_data_frame3[(stringr::str_detect(final_data_frame3$network_description, "River", negate = FALSE)),]
+#View(final_data_frame3)
+
