@@ -464,7 +464,7 @@ cumulative_oceans <- raster::raster("D:/sig/Human impact oceans 2013/global_cumu
 #
 #Re-project
 raster::crs(h_footprint)
-#AQUI
+
 h_footprint_P <- raster::projectRaster(from = h_footprint,
                               crs = CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
               )
@@ -524,7 +524,6 @@ final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "fo
 final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "Pollination", negate = FALSE),]$ecosystem <- "terrestrial"
 final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "fishery", negate = FALSE),]$ecosystem <- "marine"
 final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "river", negate = FALSE),]$ecosystem <- "freshwater"
-final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "mangrove", negate = FALSE),]$ecosystem <- "coastal"
 final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "birds", negate = FALSE),]$ecosystem <- "terrestrial"
 final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "salt marsh", negate = FALSE),]$ecosystem <- "coastal"
 final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "-pollinator", negate = FALSE),]$ecosystem <- "terrestrial"
@@ -543,7 +542,15 @@ final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "pi
 final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "Insect", negate = FALSE),]$ecosystem <- "terrestrial"
 final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "anemonefish", negate = FALSE),]$ecosystem <- "marine"
 final_data_frame3[stringr::str_detect(final_data_frame3$network_description, "fruit", negate = FALSE),]$ecosystem <- "terrestrial"
+final_data_frame3[(stringr::str_detect(final_data_frame3$network_description, "southern California", negate = FALSE)),]$ecosystem <- "terrestrial"
+final_data_frame3[(stringr::str_detect(final_data_frame3$network_description, "pond", negate = FALSE)),]$ecosystem <- "freshwater"
+final_data_frame3[(stringr::str_detect(final_data_frame3$network_description, "Bay", negate = FALSE)),]$ecosystem <- "coastal"
+final_data_frame3[(stringr::str_detect(final_data_frame3$network_description, "Laguna", negate = FALSE)),]$ecosystem <- "coastal"
+final_data_frame3[(stringr::str_detect(final_data_frame3$network_description, "Loch", negate = FALSE)),]$ecosystem <- "freshwater"
 
-#final_data_frame3[(stringr::str_detect(final_data_frame3$network_description, "River", negate = FALSE)),]
-#View(final_data_frame3)
+
+final_data_frame3[(stringr::str_detect(final_data_frame3$network_description, "Loch", negate = FALSE)),]
+
+
+View(final_data_frame3)
 
