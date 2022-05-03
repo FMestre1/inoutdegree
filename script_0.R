@@ -547,10 +547,29 @@ final_data_frame3[(stringr::str_detect(final_data_frame3$network_description, "p
 final_data_frame3[(stringr::str_detect(final_data_frame3$network_description, "Bay", negate = FALSE)),]$ecosystem <- "coastal"
 final_data_frame3[(stringr::str_detect(final_data_frame3$network_description, "Laguna", negate = FALSE)),]$ecosystem <- "coastal"
 final_data_frame3[(stringr::str_detect(final_data_frame3$network_description, "Loch", negate = FALSE)),]$ecosystem <- "freshwater"
+final_data_frame3[(stringr::str_detect(final_data_frame3$network_description, "River", negate = FALSE)) & is.na(final_data_frame3$ecosystem) ,]$ecosystem <- "freshwater"
+final_data_frame3[(stringr::str_detect(final_data_frame3$network_description, "prairie", negate = FALSE)),]$ecosystem <- "terrestrial"
+final_data_frame3[(stringr::str_detect(final_data_frame3$network_description, "reef", negate = FALSE)),]$ecosystem <- "coastal"
+final_data_frame3[(stringr::str_detect(final_data_frame3$network_description, "bird", negate = FALSE)),]$ecosystem <- "terrestrial"
+final_data_frame3[(stringr::str_detect(final_data_frame3$network_description, "lagoon", negate = FALSE)),]$ecosystem <- "freshwater"
+final_data_frame3[(stringr::str_detect(final_data_frame3$network_description, "freshwater", negate = FALSE)),]$ecosystem <- "freshwater"
+final_data_frame3[(stringr::str_detect(final_data_frame3$network_description, "atoll", negate = FALSE)),]$ecosystem <- "terrestrial"
+final_data_frame3[(stringr::str_detect(final_data_frame3$network_description, "Aleutian", negate = FALSE)),]$ecosystem <- "marine"
+final_data_frame3[(stringr::str_detect(final_data_frame3$network_description, "edge", negate = FALSE)),]$ecosystem <- "coastal"
+final_data_frame3[(stringr::str_detect(final_data_frame3$network_description, "Edge", negate = FALSE)),]$ecosystem <- "coastal"
+final_data_frame3[(stringr::str_detect(final_data_frame3$network_description, "Malaysia", negate = FALSE)),]$ecosystem[2:3] <- "freshwater"
 
 
-final_data_frame3[(stringr::str_detect(final_data_frame3$network_description, "Loch", negate = FALSE)),]
+#Search one by one
+#final_data_frame3[is.na(final_data_frame3$ecosystem),][1,]
+#final_data_frame3[is.na(final_data_frame3$ecosystem),][1,]$ecosystem <- "terrestrial"
 
 
+#Qtos faltam?
+sum(is.na(final_data_frame3$ecosystem))
+
+#Ver tabela
 View(final_data_frame3)
+
+save(final_data_frame3, file = "final_data_frame3.RData")
 
