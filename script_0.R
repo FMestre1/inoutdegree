@@ -573,3 +573,64 @@ View(final_data_frame3)
 
 save(final_data_frame3, file = "final_data_frame3.RData")
 
+################################################################################
+#Assortativity Index
+################################################################################
+
+
+#mutualistic_networks_igraph
+#antagonistic_networks_igraph
+
+assort_MUT <- c()
+assort_ANT <- c()
+
+#
+
+#lapply(mutualistic_networks_igraph, is.directed)
+#lapply(antagonistic_networks_igraph, is.directed)
+
+for(i in 1:length(mutualistic_networks_igraph)){
+  
+assort_MUT[i] <- assortativity_degree(mutualistic_networks_igraph[[i]], directed = igraph::is.directed(mutualistic_networks_igraph[[i]]))  
+
+}
+#
+for(i in 1:length(antagonistic_networks_igraph)){
+  
+assort_ANT[i] <- assortativity_degree(antagonistic_networks_igraph[[i]], directed = igraph::is.directed(antagonistic_networks_igraph[[i]]))  
+  
+}
+
+
+#Get network ID
+
+MUT_id <- c()
+ANT_id <- c()
+
+for(i in 1:length(mutualistic_networks)){
+MUT_id[i] <- mutualistic_networks[[i]]$network$network_id 
+}
+#
+for(i in 1:length(antagonistic_networks)){
+ANT_id[i] <- antagonistic_networks[[i]]$network$network_id 
+}
+
+MUT_id <- paste0("Network #", MUT_id)
+ANT_id <- paste0("Network #", ANT_id)
+
+ASSORT_MUT <- data.frame(MUT_id, assort_MUT)
+ASSORT_ANT <- data.frame(ANT_id, assort_ANT)
+
+names(ASSORT_MUT) <- c("id", "assortativity_index")
+names(ASSORT_ANT) <- c("id", "assortativity_index")
+
+assortativity <- rbind(ASSORT_MUT, ASSORT_ANT)
+
+final_data_frame4 <-merge (final_data_frame3, assortativity, by.x = 'network_number', by.y ='id')
+
+View(final_data_frame4)
+nrow(final_data_frame4)
+
+#SAVE
+save(final_data_frame4, file = "final_data_frame4.RData")
+
