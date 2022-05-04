@@ -681,5 +681,21 @@ names(final_data_frame6)
 ################################################################################
 
 
+ant1 <- final_data_frame6[final_data_frame6$type=="antagonistic",]
+mut1 <- final_data_frame6[final_data_frame6$type=="mutualistic",]
+
+plot(ant1$h_foot_vector, ant1$alpha_out)
+plot(ant1$h_foot_vector, ant1$alpha_in)
+
+plot(mut1$h_foot_vector, mut1$alpha_out)
+plot(mut1$h_foot_vector, mut1$alpha_in)
+
+
+
+plot(ant1$c_ocean_vector, ant1$alpha_out)
+plot(ant1$c_ocean_vector, ant1$alpha_in)
+
+plot(mut1$c_ocean_vector, mut1$alpha_out)
+plot(mut1$c_ocean_vector, mut1$alpha_in)
 
 
