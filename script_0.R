@@ -634,3 +634,52 @@ nrow(final_data_frame4)
 #SAVE
 save(final_data_frame4, file = "final_data_frame4.RData")
 
+
+################################################################################
+#Select directed graphs
+################################################################################
+
+is_directed <- c(unlist(lapply(mutualistic_networks_igraph, is.directed)),
+                 unlist(lapply(antagonistic_networks_igraph, is.directed)))
+
+net_id_is_directed_mut <- c()
+net_id_is_directed_ant <- c()
+
+
+for(i in 1:length(mutualistic_networks)){
+
+net_id_is_directed_mut[i] <- paste0("Network #", mutualistic_networks[[i]]$network$network_id)
+  
+}
+  
+for(i in 1:length(antagonistic_networks)){
+  
+  net_id_is_directed_ant[i] <- paste0("Network #", antagonistic_networks[[i]]$network$network_id)
+  
+}
+
+net_id_is_directed <- c(net_id_is_directed_mut, net_id_is_directed_ant)
+
+is_directed2 <- data.frame(net_id_is_directed, is_directed)
+names(is_directed2)
+
+final_data_frame5 <-merge (final_data_frame4, is_directed2, by.x = 'network_number', by.y ='net_id_is_directed')
+View(final_data_frame5)
+
+final_data_frame6 <- final_data_frame5[final_data_frame5$is_directed == TRUE,]
+View(final_data_frame6)
+nrow(final_data_frame6)
+table(final_data_frame6$type)
+
+#COrrect for the number of nodes and edges
+names(final_data_frame6)[3] <- "nedges"
+names(final_data_frame6)[4] <- "nnodes"
+
+save(final_data_frame6, file = "final_data_frame6.RData")
+
+names(final_data_frame6)
+################################################################################
+
+
+
+
