@@ -222,7 +222,6 @@ first_author_ANT <- c()
 paper_url_ANT <- c()
 data_url_ANT <- c()
 
-
 for(i in 1:length(mutualistic_networks)){
   
   mangal1 <- mutualistic_networks[[i]]
@@ -272,7 +271,6 @@ for(i in 1:length(antagonistic_networks)){
   rm(mangal1_summ)
   
 }
-
 
 nnodes_MUT <- as.numeric(nnodes_MUT)
 nedges_MUT <- as.numeric(nedges_MUT)
@@ -559,11 +557,9 @@ final_data_frame3[(stringr::str_detect(final_data_frame3$network_description, "e
 final_data_frame3[(stringr::str_detect(final_data_frame3$network_description, "Edge", negate = FALSE)),]$ecosystem <- "coastal"
 final_data_frame3[(stringr::str_detect(final_data_frame3$network_description, "Malaysia", negate = FALSE)),]$ecosystem[2:3] <- "freshwater"
 
-
 #Search one by one
 #final_data_frame3[is.na(final_data_frame3$ecosystem),][1,]
 #final_data_frame3[is.na(final_data_frame3$ecosystem),][1,]$ecosystem <- "terrestrial"
-
 
 #Qtos faltam?
 sum(is.na(final_data_frame3$ecosystem))
@@ -583,9 +579,7 @@ save(final_data_frame3, file = "final_data_frame3.RData")
 
 assort_MUT <- c()
 assort_ANT <- c()
-
 #
-
 #lapply(mutualistic_networks_igraph, is.directed)
 #lapply(antagonistic_networks_igraph, is.directed)
 
@@ -601,9 +595,7 @@ assort_ANT[i] <- assortativity_degree(antagonistic_networks_igraph[[i]], directe
   
 }
 
-
 #Get network ID
-
 MUT_id <- c()
 ANT_id <- c()
 
@@ -634,7 +626,6 @@ nrow(final_data_frame4)
 #SAVE
 save(final_data_frame4, file = "final_data_frame4.RData")
 
-
 ################################################################################
 #Select directed graphs
 ################################################################################
@@ -663,7 +654,7 @@ net_id_is_directed <- c(net_id_is_directed_mut, net_id_is_directed_ant)
 is_directed2 <- data.frame(net_id_is_directed, is_directed)
 names(is_directed2)
 
-final_data_frame5 <-merge (final_data_frame4, is_directed2, by.x = 'network_number', by.y ='net_id_is_directed')
+final_data_frame5 <-merge(final_data_frame4, is_directed2, by.x = 'network_number', by.y ='net_id_is_directed')
 View(final_data_frame5)
 
 final_data_frame6 <- final_data_frame5[final_data_frame5$is_directed == TRUE,]
@@ -678,24 +669,86 @@ names(final_data_frame6)[4] <- "nnodes"
 save(final_data_frame6, file = "final_data_frame6.RData")
 
 names(final_data_frame6)
+View(final_data_frame6)
+
+################################################################################
+#HANPP##########################################################################
+#12-05-2022
+#load
+hanpp_perc_npp <- raster("C:/fw_space/hapctnpp-geotiff/hapctnpp_geotiff.tif")
+
+final_data_frame6_SPATIAL <- SpatialPointsDataFrame(coords = final_data_frame6[,7:8], data = final_data_frame6)
+
+plot(hanpp_perc_npp)
+plot(world, add=T)
+plot(final_data_frame6_SPATIAL, add=T)
+
+hanpp_vector <- extract(hanpp_perc_npp, final_data_frame6_SPATIAL)
+
+
+final_data_frame7 <- data.frame(final_data_frame6, hanpp_vector)
+View(final_data_frame7)
+
 ################################################################################
 
 
-ant1 <- final_data_frame6[final_data_frame6$type=="antagonistic",]
-mut1 <- final_data_frame6[final_data_frame6$type=="mutualistic",]
-
-plot(ant1$h_foot_vector, ant1$alpha_out)
-plot(ant1$h_foot_vector, ant1$alpha_in)
-
-plot(mut1$h_foot_vector, mut1$alpha_out)
-plot(mut1$h_foot_vector, mut1$alpha_in)
+ant1 <- final_data_frame7[final_data_frame7$type=="antagonistic",]
+mut1 <- final_data_frame7[final_data_frame7$type=="mutualistic",]
 
 
+####
 
-plot(ant1$c_ocean_vector, ant1$alpha_out)
-plot(ant1$c_ocean_vector, ant1$alpha_in)
+library(bbmle)
+library(minpack.lm)
 
-plot(mut1$c_ocean_vector, mut1$alpha_out)
-plot(mut1$c_ocean_vector, mut1$alpha_in)
+marine_df <- ant1[ant1$ecosystem == "marine",]
+marine_df <- marine_df[!is.na(marine_df$c_ocean_vector),]
+
+freshwater_df <- ant1[ant1$ecosystem == "freshwater",]
+freshwater_df <- freshwater_df[!is.na(freshwater_df$h_foot_vector),]
+
+ant2 <- ant1[!is.na(ant1$hanpp_vector),]
+mut2 <- mut1[!is.na(mut1$hanpp_vector),]
+
+x= ant2$hanpp_vector
+y= ant2$alpha_out
+n=nrow(ant2)
+
+plot(x,y)
+
+#Models
+# null
+null=lm(y~1)
+# exponential
+lm(log(ant2$hanpp_vector+0.5) ~ log(ant2$alpha_out+0.5))
+#
+exponential=nls(y~a+b*log(x+0.5), start = list(a=2.3805, b=0.6383))
+#exponential=nlsLM(y~a+b*log(x+0.5), start = list(a=2.471, b=-1.769))
+
+# assintotic
+assintotic=nls(y~a+b/(x+0.5), start = list(a=2.3805, b=0.6383)) 
+
+AICctab(null,exponential,assintotic,nobs=n,weights = TRUE, delta = TRUE, base = TRUE)
+
+#Plot data amd fitted models
+plot(ant2$hanpp_vector ~ ant2$alpha_out, ylab="hanpp", xlab="Network parameter")
+abline(null,col="green")
+
+lines(coefficients(exponential)[1]+(coefficients(exponential)[2])*log(1:max(x)))
+lines(coefficients(assintotic)[1]+(coefficients(assintotic)[2])/(1:max(x)), col="blue")
+
+
+#3D
+
+# library
+library(rgl)
+
+# Plot
+plot3d( 
+  x=mut1$h_foot_vector, y=mut1$alpha_out, z=mut1$nnodes, 
+  #col = mut1$connectance*100, 
+  type = 's', 
+  radius = 15,
+  xlab="human footprint", ylab="curve parameter", zlab="nodes")
 
 
