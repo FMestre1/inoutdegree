@@ -710,9 +710,11 @@ freshwater_df <- freshwater_df[!is.na(freshwater_df$h_foot_vector),]
 ant2 <- ant1[!is.na(ant1$hanpp_vector),]
 mut2 <- mut1[!is.na(mut1$hanpp_vector),]
 
-x= ant2$hanpp_vector
-y= ant2$alpha_out
-n=nrow(ant2)
+ant3 <- ant2[ant2$hanpp_vector<12000,]
+
+x= ant3$hanpp_vector
+y= ant3$alpha_out
+n=nrow(ant3)
 
 plot(x,y)
 
@@ -720,18 +722,18 @@ plot(x,y)
 # null
 null=lm(y~1)
 # exponential
-lm(log(ant2$hanpp_vector+0.5) ~ log(ant2$alpha_out+0.5))
+lm(log(ant3$alpha_out+0.5) ~ log(ant3$hanpp_vector+0.5))
 #
-exponential=nls(y~a+b*log(x+0.5), start = list(a=2.3805, b=0.6383))
+exponential=nls(y~a+b*log(x+0.5), start = list(a=1.95977, b=-0.02266))
 #exponential=nlsLM(y~a+b*log(x+0.5), start = list(a=2.471, b=-1.769))
 
 # assintotic
-assintotic=nls(y~a+b/(x+0.5), start = list(a=2.3805, b=0.6383)) 
+assintotic=nls(y~a+b/(x+0.5), start = list(a=1.95977, b=-0.02266)) 
 
 AICctab(null,exponential,assintotic,nobs=n,weights = TRUE, delta = TRUE, base = TRUE)
 
 #Plot data amd fitted models
-plot(ant2$hanpp_vector ~ ant2$alpha_out, ylab="hanpp", xlab="Network parameter")
+plot(ant3$alpha_out ~ ant3$hanpp_vector , xlab="hanpp", ylab="Network parameter")
 abline(null,col="green")
 
 lines(coefficients(exponential)[1]+(coefficients(exponential)[2])*log(1:max(x)))
