@@ -689,6 +689,8 @@ hanpp_vector <- extract(hanpp_perc_npp, final_data_frame6_SPATIAL)
 final_data_frame7 <- data.frame(final_data_frame6, hanpp_vector)
 View(final_data_frame7)
 
+save(final_data_frame7, file="final_data_frame7.RData")
+
 ################################################################################
 
 
