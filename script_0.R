@@ -6,6 +6,8 @@
 library(rmangal)
 library(igraph)
 library(sp)
+library(rgl)
+library(vegan)
 
 #"mutualism", "predation", "herbivory", "scavenger", "detritivore"
 
@@ -744,15 +746,47 @@ lines(coefficients(assintotic)[1]+(coefficients(assintotic)[2])/(1:max(x)), col=
 
 #3D
 
-# library
-library(rgl)
-
 # Plot
 plot3d( 
-  x=mut1$h_foot_vector, y=mut1$alpha_out, z=mut1$nnodes, 
+  x=ant1$hanpp_vector, y=ant1$alpha_out, z=mut1$nnodes,
   #col = mut1$connectance*100, 
   type = 's', 
-  radius = 15,
-  xlab="human footprint", ylab="curve parameter", zlab="nodes")
+  radius = 15*10,
+  xlab="human impact", ylab="curve parameter", zlab="nodes")
+
+names(mut1)
+
+ant3 <- ant1[complete.cases(ant1),]
+mod1 <-varpart(ant3$alpha_in, ant3$hanpp_vector, ant3$h_foot_vector)
+plot(mod1)
+summary(mod1)
+
+###################
+#FMestre
+#26-05-2022
+
+
+View(final_data_frame7)
+
+net_number <- final_data_frame7[1,]$network_number
+
+
+antagonistic_networks
+summary(mutualistic_networks[[1]])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
