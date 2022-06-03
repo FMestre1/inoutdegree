@@ -52,7 +52,6 @@ antagonistic_networks <- unique(antagonistic_networks)
 save(mutualistic_networks, file="mutualistic_networks.RData")
 save(antagonistic_networks, file="antagonistic_networks.RData")
 
-
 #Convert to igraph
 mutualistic_networks_igraph <- as.igraph(mutualistic_networks)
 class(antagonistic_networks) <- class(mutualistic_networks)
@@ -86,7 +85,6 @@ for(i in 1:length(antagonistic_networks_igraph)){
   
 }
 
-
 #Which don't have only degrees 0 and 1
 #non_excluded_MUT <- as.numeric(lapply(in_degree_list, sum)) > as.numeric(lapply(in_degree_list, length))
 #mangal_collection_igraph_2 <- mangal_collection_igraph[non_excluded]
@@ -119,7 +117,6 @@ for(i in 1:length(antagonistic_networks_igraph)){
   message(paste0("Concluded matrix ", i, "!"))
   
 }
-
 
 alpha_in_MUT <- c()
 alpha_out_MUT <- c()
@@ -181,7 +178,6 @@ p_in <- c(p_in_MUT, p_in_ANT)
 p_out <- c(p_out_MUT, p_out_ANT)
 log_lik_in <- c(log_lik_in_MUT, log_lik_in_ANT)
 log_lik_out <- c(log_lik_out_MUT, log_lik_out_ANT)
-
 
 ###Data frame with in and out degree distributiin fit ##########################
 
@@ -390,7 +386,6 @@ for(i in 1:length(xy_ANT)){
   xy_2_ANT[i,2] <- as.numeric(xy_net)[2]
 }
 
-
 xy_2 <- rbind(xy_2_MUT, xy_2_ANT)
 nrow(xy_2)
 
@@ -506,7 +501,6 @@ final_data_frame2 <- cbind(final_data_frame
 ################################################################################
 ## Add ecosystem
 
-
 final_data_frame3 <- data.frame(final_data_frame2,NA)
 names(final_data_frame3)[25] <- "ecosystem"
 
@@ -574,7 +568,6 @@ save(final_data_frame3, file = "final_data_frame3.RData")
 ################################################################################
 #Assortativity Index
 ################################################################################
-
 
 #mutualistic_networks_igraph
 #antagonistic_networks_igraph
@@ -687,7 +680,6 @@ plot(final_data_frame6_SPATIAL, add=T)
 
 hanpp_vector <- extract(hanpp_perc_npp, final_data_frame6_SPATIAL)
 
-
 final_data_frame7 <- data.frame(final_data_frame6, hanpp_vector)
 View(final_data_frame7)
 
@@ -695,10 +687,8 @@ save(final_data_frame7, file="final_data_frame7.RData")
 
 ################################################################################
 
-
 ant1 <- final_data_frame7[final_data_frame7$type=="antagonistic",]
 mut1 <- final_data_frame7[final_data_frame7$type=="mutualistic",]
-
 
 ####
 
@@ -743,7 +733,6 @@ abline(null,col="green")
 lines(coefficients(exponential)[1]+(coefficients(exponential)[2])*log(1:max(x)))
 lines(coefficients(assintotic)[1]+(coefficients(assintotic)[2])/(1:max(x)), col="blue")
 
-
 #3D
 
 # Plot
@@ -764,29 +753,290 @@ summary(mod1)
 ###################
 #FMestre
 #26-05-2022
+#Create spatial point data frame
 
-
-View(final_data_frame7)
-
-net_number <- final_data_frame7[1,]$network_number
-
-
-antagonistic_networks
-summary(mutualistic_networks[[1]])
+final_data_frame_7_SPATIAL <- SpatialPointsDataFrame(coords = final_data_frame7[,7:8], 
+                                                   data = final_data_frame7, 
+                                                   proj4string = world@proj4string)
 
 
 
+plot(world)
+plot(final_data_frame_7_SPATIAL, add = TRUE)
 
 
+################################################################################
+# UPLOAD VARIABLES
+################################################################################
+
+#STRUDY SIDE
+##COPERNICUS FRAGMENTATION
+#f_2015 <- raster::raster("D:/cluster2/rasters/FGA2_S_2015_v01/FGA2_S_2015_v3.tif")
+#f_2012 <- raster::raster("D:/cluster2/rasters/FGA2_S_2012_v01/FGA2_S_2012_v3.tif")
+#f_2009 <- raster::raster("D:/cluster2/rasters/FGA2_S_2009_v01/FGA2_S_2009_v3.tif")
+
+##HANPP and NPP
+#NPP
+npp_1990 <- raster("D:/cluster2/rasters/NPPpot_europe_1990_gCmyr.tif")
+npp_2000 <- raster("D:/cluster2/rasters/NPPpot_europe_2000_gCmyr.tif")
+npp_2006 <- raster("D:/cluster2/rasters/NPPpot_europe_2006_gCmyr.tif")
+#HANPP
+hanpp_1990 <- raster("D:/cluster2/rasters/hanpp_europe_1990_gCmyr.tif")
+hanpp_2000 <- raster("D:/cluster2/rasters/hanpp_europe_2000_gCmyr.tif")
+hanpp_2006 <- raster("D:/cluster2/rasters/hanpp_europe_2006_gCmyr.tif")
+#As % of potential NPP
+hanpp_perc_1990 <- raster("D:/cluster2/rasters/hanpp_europe_1990_percent.tif")
+hanpp_perc_2000 <- raster("D:/cluster2/rasters/hanpp_europe_2000_percent.tif")
+hanpp_perc_2006 <- raster("D:/cluster2/rasters/hanpp_europe_2006_percent.tif")
+
+#WORLDCLIM
+bio1_80 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_80s_bio1.tif")
+bio1_90 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_90s_bio1.tif")
+bio1_00 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_00s_bio1.tif")
+bio1 <- mean(bio1_80, bio1_90, bio1_00)
+rm(bio1_80, bio1_90, bio1_00)
+#
+#
+bio2_80 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_80s_bio2.tif")
+bio2_90 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_90s_bio2.tif")
+bio2_00 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_00s_bio2.tif")
+bio2 <- mean(bio2_80, bio2_90, bio2_00)
+rm(bio2_80, bio2_90, bio2_00)
+#
+bio3_80 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_80s_bio3.tif")
+bio3_90 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_90s_bio3.tif")
+bio3_00 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_00s_bio3.tif")
+bio3 <- mean(bio3_80, bio3_90, bio3_00)
+rm(bio3_80, bio3_90, bio3_00)
+#
+bio4_80 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_80s_bio4.tif")
+bio4_90 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_90s_bio4.tif")
+bio4_00 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_00s_bio4.tif")
+bio4 <- mean(bio4_80, bio4_90, bio4_00)
+rm(bio4_80, bio4_90, bio4_00)
+#
+bio5_80 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_80s_bio5.tif")
+bio5_90 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_90s_bio5.tif")
+bio5_00 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_00s_bio5.tif")
+bio5 <- mean(bio5_80, bio5_90, bio5_00)
+rm(bio5_80, bio5_90, bio5_00)
+#
+bio6_80 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_80s_bio6.tif")
+bio6_90 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_90s_bio6.tif")
+bio6_00 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_00s_bio6.tif")
+bio6 <- mean(bio6_80, bio6_90, bio6_00)
+rm(bio6_80, bio6_90, bio6_00)
+#
+bio7_80 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_80s_bio7.tif")
+bio7_90 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_90s_bio7.tif")
+bio7_00 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_00s_bio7.tif")
+bio7 <- mean(bio7_80, bio7_90, bio7_00)
+rm(bio7_80, bio7_90, bio7_00)
+#
+bio8_80 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_80s_bio8.tif")
+bio8_90 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_90s_bio8.tif")
+bio8_00 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_00s_bio8.tif")
+bio8 <- mean(bio8_80, bio8_90, bio8_00)
+rm(bio8_80, bio8_90, bio8_00)
+#
+bio9_80 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_80s_bio9.tif")
+bio9_90 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_90s_bio9.tif")
+bio9_00 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_00s_bio9.tif")
+bio9 <- mean(bio9_80, bio9_90, bio9_00)
+rm(bio9_80, bio9_90, bio9_00)
+#
+bio10_80 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_80s_bio10.tif")
+bio10_90 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_90s_bio10.tif")
+bio10_00 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_00s_bio10.tif")
+bio10 <- mean(bio10_80, bio10_90, bio10_00)
+rm(bio10_80, bio10_90, bio10_00)
+#
+bio11_80 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_80s_bio11.tif")
+bio11_90 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_90s_bio11.tif")
+bio11_00 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_00s_bio11.tif")
+bio11 <- mean(bio11_80, bio11_90, bio11_00)
+rm(bio11_80, bio11_90, bio11_00)
+#
+bio12_80 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_80s_bio12.tif")
+bio12_90 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_90s_bio12.tif")
+bio12_00 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_00s_bio12.tif")
+bio12 <- mean(bio12_80, bio12_90, bio12_00)
+rm(bio12_80, bio12_90, bio12_00)
+#
+bio13_80 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_80s_bio13.tif")
+bio13_90 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_90s_bio13.tif")
+bio13_00 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_00s_bio13.tif")
+bio13 <- mean(bio13_80, bio13_90, bio13_00)
+rm(bio13_80, bio13_90, bio13_00)
+#
+bio14_80 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_80s_bio14.tif")
+bio14_90 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_90s_bio14.tif")
+bio14_00 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_00s_bio14.tif")
+bio14 <- mean(bio14_80, bio14_90, bio14_00)
+rm(bio14_80, bio14_90, bio14_00)
+#
+bio15_80 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_80s_bio15.tif")
+bio15_90 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_90s_bio15.tif")
+bio15_00 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_00s_bio15.tif")
+bio15 <- mean(bio15_80, bio15_90, bio15_00)
+rm(bio15_80, bio15_90, bio15_00)
+#
+bio16_80 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_80s_bio16.tif")
+bio16_90 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_90s_bio16.tif")
+bio16_00 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_00s_bio16.tif")
+bio16 <- mean(bio16_80, bio16_90, bio16_00)
+rm(bio16_80, bio16_90, bio16_00)
+#
+bio17_80 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_80s_bio17.tif")
+bio17_90 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_90s_bio17.tif")
+bio17_00 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_00s_bio17.tif")
+bio17 <- mean(bio17_80, bio17_90, bio17_00)
+rm(bio17_80, bio17_90, bio17_00)
+#
+bio18_80 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_80s_bio18.tif")
+bio18_90 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_90s_bio18.tif")
+bio18_00 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_00s_bio18.tif")
+bio18 <- mean(bio18_80, bio18_90, bio18_00)
+rm(bio18_80, bio18_90, bio18_00)
+#
+bio19_80 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_80s_bio19.tif")
+bio19_90 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_90s_bio19.tif")
+bio19_00 <- raster("D:/Dados climáticos/MERRAclim/10m_mean_00s_bio19.tif")
+bio19 <- mean(bio19_80, bio19_90, bio19_00)
+rm(bio19_80, bio19_90, bio19_00)
+#
+
+#WORLDCLIM
+max_temp1 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_tmax/wc2.1_10m_tmax_01.tif")
+max_temp2 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_tmax/wc2.1_10m_tmax_02.tif")
+max_temp3 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_tmax/wc2.1_10m_tmax_03.tif")
+max_temp4 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_tmax/wc2.1_10m_tmax_04.tif")
+max_temp5 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_tmax/wc2.1_10m_tmax_05.tif")
+max_temp6 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_tmax/wc2.1_10m_tmax_06.tif")
+max_temp7 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_tmax/wc2.1_10m_tmax_07.tif")
+max_temp8 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_tmax/wc2.1_10m_tmax_08.tif")
+max_temp9 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_tmax/wc2.1_10m_tmax_09.tif")
+max_temp10 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_tmax/wc2.1_10m_tmax_10.tif")
+max_temp11 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_tmax/wc2.1_10m_tmax_11.tif")
+max_temp12 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_tmax/wc2.1_10m_tmax_12.tif")
+#
+min_temp1 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_tmin/wc2.1_10m_tmin_01.tif")
+min_temp2 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_tmin/wc2.1_10m_tmin_02.tif")
+min_temp3 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_tmin/wc2.1_10m_tmin_03.tif")
+min_temp4 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_tmin/wc2.1_10m_tmin_04.tif")
+min_temp5 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_tmin/wc2.1_10m_tmin_05.tif")
+min_temp6 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_tmin/wc2.1_10m_tmin_06.tif")
+min_temp7 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_tmin/wc2.1_10m_tmin_07.tif")
+min_temp8 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_tmin/wc2.1_10m_tmin_08.tif")
+min_temp9 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_tmin/wc2.1_10m_tmin_09.tif")
+min_temp10 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_tmin/wc2.1_10m_tmin_10.tif")
+min_temp11 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_tmin/wc2.1_10m_tmin_11.tif")
+min_temp12 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_tmin/wc2.1_10m_tmin_12.tif")
+#
+av_temp1 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.0_10m_tavg/wc2.0_10m_tavg_01.tif")
+av_temp2 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.0_10m_tavg/wc2.0_10m_tavg_02.tif")
+av_temp3 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.0_10m_tavg/wc2.0_10m_tavg_03.tif")
+av_temp4 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.0_10m_tavg/wc2.0_10m_tavg_04.tif")
+av_temp5 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.0_10m_tavg/wc2.0_10m_tavg_05.tif")
+av_temp6 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.0_10m_tavg/wc2.0_10m_tavg_06.tif")
+av_temp7 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.0_10m_tavg/wc2.0_10m_tavg_07.tif")
+av_temp8 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.0_10m_tavg/wc2.0_10m_tavg_08.tif")
+av_temp9 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.0_10m_tavg/wc2.0_10m_tavg_09.tif")
+av_temp10 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.0_10m_tavg/wc2.0_10m_tavg_10.tif")
+av_temp11 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.0_10m_tavg/wc2.0_10m_tavg_11.tif")
+av_temp12 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.0_10m_tavg/wc2.0_10m_tavg_12.tif")
+#
+prec1 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.0_10m_prec/wc2.0_10m_prec_01.tif")
+prec2 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.0_10m_prec/wc2.0_10m_prec_02.tif")
+prec3 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.0_10m_prec/wc2.0_10m_prec_03.tif")
+prec4 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.0_10m_prec/wc2.0_10m_prec_04.tif")
+prec5 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.0_10m_prec/wc2.0_10m_prec_05.tif")
+prec6 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.0_10m_prec/wc2.0_10m_prec_06.tif")
+prec7 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.0_10m_prec/wc2.0_10m_prec_07.tif")
+prec8 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.0_10m_prec/wc2.0_10m_prec_08.tif")
+prec9 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.0_10m_prec/wc2.0_10m_prec_09.tif")
+prec10 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.0_10m_prec/wc2.0_10m_prec_10.tif")
+prec11 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.0_10m_prec/wc2.0_10m_prec_11.tif")
+prec12 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.0_10m_prec/wc2.0_10m_prec_12.tif")
+#
+rad1 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_srad/wc2.1_10m_srad_01.tif")
+rad2 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_srad/wc2.1_10m_srad_02.tif")
+rad3 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_srad/wc2.1_10m_srad_03.tif")
+rad4 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_srad/wc2.1_10m_srad_04.tif")
+rad5 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_srad/wc2.1_10m_srad_05.tif")
+rad6 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_srad/wc2.1_10m_srad_06.tif")
+rad7 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_srad/wc2.1_10m_srad_07.tif")
+rad8 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_srad/wc2.1_10m_srad_08.tif")
+rad9 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_srad/wc2.1_10m_srad_09.tif")
+rad10 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_srad/wc2.1_10m_srad_10.tif")
+rad11 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_srad/wc2.1_10m_srad_11.tif")
+rad12 <- raster("D:/Dados climáticos/WorldClim 2.0/wc2.1_10m_srad/wc2.1_10m_srad_12.tif")
+
+max_temp <- mean(max_temp1, max_temp2, max_temp3, max_temp4, max_temp5, 
+                 max_temp6, max_temp7, max_temp8, max_temp9, max_temp10, max_temp11, max_temp12)
+min_temp <- mean(min_temp1, min_temp2, min_temp3, min_temp4, min_temp5, min_temp6, 
+                 min_temp7, min_temp8, min_temp9, min_temp10, min_temp11, min_temp12)
+average_temp <- mean(av_temp1, av_temp2, av_temp3, av_temp4, av_temp5, av_temp6, 
+                     av_temp7, av_temp8, av_temp9, av_temp10, av_temp11, av_temp12)
+precipitation <- mean(prec1, prec2, prec3, prec4, prec5, prec6, prec7, prec8, 
+                      prec9, prec10, prec11, prec12)
+solar_radiation <- mean(rad1, rad2, rad3, rad4, rad5, rad6, rad7, rad8, rad9,
+                        rad10, rad11, rad12)
+#
+
+#Bio-Oracle
+mean_depth_primary_prod <- raster("D:/Dados climáticos/Bio-ORACLE/Present.Benthic.Mean.Depth.Primary.productivity.Mean.BOv2_2.tif/Present.Benthic.Mean.Depth.Primary.productivity.Mean.tif")
+surface_primary_prod <- raster("D:/Dados climáticos/Bio-ORACLE/Present.Surface.Primary.productivity.Mean.BOv2_2.tif/Present.Surface.Primary.productivity.Mean.tif")
+
+#CREATE STACKS
+#copernicus_frag <- stack(f_2009, f_2012, f_2015)
+npp <- stack(npp_1990, npp_2000, npp_2006)
+hanpp <- stack(hanpp_1990, hanpp_2000, hanpp_2006)
+hanpp_perc <- stack(hanpp_perc_1990, hanpp_perc_2000, hanpp_perc_2006)
+merraclim_bioclimatic <- stack(bio1, bio2, bio3, bio4, bio5, bio6, bio7, bio8, bio9, 
+              bio10, bio11, bio12, bio13, bio14, bio15, bio16, bio17,
+              bio18, bio19)
+worldclim_others <- stack(max_temp, min_temp, average_temp, precipitation, solar_radiation)
+bio_oracle <- stack(mean_depth_primary_prod, surface_primary_prod)
+
+#EXTRACT
+#copernicus_frag_extracted <- raster::extract(copernicus_frag, final_data_frame_7_SPATIAL)
+npp_extracted <- raster::extract(npp, final_data_frame_7_SPATIAL)
+hanpp_extracted <- raster::extract(hanpp, final_data_frame_7_SPATIAL)
+hanpp_perc_extracted <- raster::extract(hanpp_perc, final_data_frame_7_SPATIAL)
+#
+merraclim_bioclimatic_extracted <- raster::extract(merraclim_bioclimatic, final_data_frame_7_SPATIAL)
+worldclim_others_extracted <- raster::extract(worldclim_others, final_data_frame_7_SPATIAL)
+#
+bio_oracle_extracted <- raster::extract(bio_oracle, final_data_frame_7_SPATIAL)
+#
+vars1 <- data.frame(
+           #copernicus_frag_extracted,
+           npp_extracted,
+           hanpp_extracted,
+           hanpp_perc_extracted,
+           merraclim_bioclimatic_extracted,
+           worldclim_others_extracted,
+           bio_oracle_extracted
+           )
+
+names(vars1) <- c(#"copernicus_frag_2009", "copernicus_frag_2012", "copernicus_frag_2015", 
+                  "npp_1990", "npp_2000", "npp_2006", 
+                  "hanpp_1990", "hanpp_2000", "hanpp_2006", 
+                  "hanpp_perc_1990", "hanpp_perc_2000", "hanpp_perc_2006", 
+                  "bio1", "bio2", "bio3", "bio4", "bio5", "bio6", "bio7", "bio8", 
+                  "bio9", "bio10", "bio11", "bio12", "bio13", "bio14", "bio15", "bio16", 
+                  "bio17", "bio18", "bio19", 
+                  "max_temp", "min_temp", "average_temp", "precipitation", "solar_radiation",
+                  "marine_mean_depth_PP", "marine_surface_PP")
+
+View(vars1)
+
+#plot(solar_radiation)
+#plot(final_data_frame_7_SPATIAL, add=TRUE)
 
 
+final_data_frame8 <- data.frame(final_data_frame7, vars1)
+View(final_data_frame8)
 
-
-
-
-
-
-
-
-
-
+save(final_data_frame8, file = "final_data_frame8.RData")
