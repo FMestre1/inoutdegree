@@ -1040,3 +1040,18 @@ final_data_frame8 <- data.frame(final_data_frame7, vars1)
 View(final_data_frame8)
 
 save(final_data_frame8, file = "final_data_frame8.RData")
+
+#final_data_frame8[(stringr::str_detect(final_data_frame8$network_description, "xxx", negate = FALSE)),]
+
+plot(final_data_frame8$alpha_in,
+     final_data_frame8$h_foot_vector)
+
+
+final_data_frame9 <- final_data_frame8[final_data_frame8$p_in>0.05 & final_data_frame8$p_out>0.05,]
+
+
+library(rgl)
+plot3d(x=final_data_frame9$alpha_in,
+       y=final_data_frame9$h_foot_vector, 
+       z=final_data_frame9$alpha_out, 
+       type = "s", size = 0.75, lit = FALSE)
