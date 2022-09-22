@@ -1055,3 +1055,32 @@ plot3d(x=final_data_frame9$alpha_in,
        y=final_data_frame9$h_foot_vector, 
        z=final_data_frame9$alpha_out, 
        type = "s", size = 0.75, lit = FALSE)
+
+
+##
+#22-07-2022
+#FMestre
+
+View(final_data_frame9)
+#save(final_data_frame9, file = "final_data_frame9.RData")
+
+#FMestre
+#final_data_frame9
+#22-09-2022
+
+cor(final_data_frame9$solar_radiation,final_data_frame9$bio1, use="complete.obs")
+
+table(final_data_frame9$type)
+table(final_data_frame9$ecosystem)
+
+
+names(final_data_frame9)
+
+final_data_frame9$over_continent
+
+final_data_frame9[final_data_frame9$type=="mutualistic",]
+
+
+final_data_frame9_SPATIAL <- sp::SpatialPointsDataFrame(coords = final_data_frame9[,7:8], data = final_data_frame9)
+
+rgdal::writeOGR(obj=final_data_frame9_SPATIAL, dsn="final_data_frame9_SPATIAL", layer="final_data_frame9_SPATIAL", driver="ESRI Shapefile")
