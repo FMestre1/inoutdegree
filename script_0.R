@@ -137,7 +137,6 @@ for(i in 1:length(mutualistic_networks_igraph)){
   fit_in <- fit_power_law(in_degree_list_2_MUT[[i]]+1)
   fit_out <- fit_power_law(out_degree_list_2_MUT[[i]]+1)
   
-  
   alpha_in_MUT[i] <- fit_in$alpha
   alpha_out_MUT[i] <- fit_out$alpha
   p_in_MUT[i] <- fit_in$KS.p
@@ -329,7 +328,7 @@ xy_MUT <- list()
 xy_ANT <- list()
 
 for(i in 1:length(mutualistic_networks)){
-  
+
   #if POINT get VALUE
   if(any(class(mutualistic_networks[[i]]$network$geom[[1]])=="POINT")){
     xy_MUT[[i]] <- mutualistic_networks[[i]]$network$geom[[1]]
