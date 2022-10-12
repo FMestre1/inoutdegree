@@ -1083,3 +1083,33 @@ final_data_frame9[final_data_frame9$type=="mutualistic",]
 final_data_frame9_SPATIAL <- sp::SpatialPointsDataFrame(coords = final_data_frame9[,7:8], data = final_data_frame9)
 
 rgdal::writeOGR(obj=final_data_frame9_SPATIAL, dsn="final_data_frame9_SPATIAL", layer="final_data_frame9_SPATIAL", driver="ESRI Shapefile")
+
+################################################################################
+#         REMOVE SMALLER FOOD WEBS? THOSE WITH SMALLER MAX DEGREE?
+################################################################################
+
+nnodes_OF_all_mangal_objects_selected_igraph <- c()
+  
+for(i in 1:length(all_mangal_objects_selected_igraph)){
+  
+  nnodes_OF_all_mangal_objects_selected_igraph[i] <- igraph::gorder(all_mangal_objects_selected_igraph[[i]])
+  
+}
+
+nnodes_OF_all_mangal_objects_selected_igraph
+
+###
+
+max_degree_OF_all_mangal_objects_selected_igraph <- c()
+
+for(i in 1:length(all_mangal_objects_selected_igraph)){
+  
+  max_degree_OF_all_mangal_objects_selected_igraph[i] <- max(igraph::degree(all_mangal_objects_selected_igraph[[i]]))
+  
+}
+
+max_degree_OF_all_mangal_objects_selected_igraph
+
+
+
+
