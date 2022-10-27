@@ -160,7 +160,6 @@ library(beanplot)
 
 beanplot(in_overall_vector ~ fact1)
 
-
 #out - overall
 fact1 <- c(rep("location", 310), rep("size", 310), rep("shape", 310))
 out_overall_vector <- c(sq_wasserstein_out_overall_location_PERC, sq_wasserstein_out_overall_size_PERC, sq_wasserstein_out_overall_shape_PERC)
@@ -254,7 +253,7 @@ save(final_data_frame_12, file = "final_data_frame_12.RData")
 save(final_data_frame_12_FW, file =  "final_data_frame_12_FW.RData")
 save(final_data_frame_12_MUT, file =  "final_data_frame_12_MUT.RData")
 
-#Explore
+#Explore relationships
 plot(final_data_frame_12_FW$h_foot_vector,final_data_frame_12_FW$sq_wasserstein_in_overall_location_PERC)
 plot(final_data_frame_12_FW$h_foot_vector,final_data_frame_12_FW$sq_wasserstein_in_overall_size_PERC)
 plot(final_data_frame_12_FW$h_foot_vector,final_data_frame_12_FW$sq_wasserstein_in_overall_shape_PERC)
@@ -267,5 +266,131 @@ plot(final_data_frame_12_FW$h_foot_vector,final_data_frame_12_FW$sq_wasserstein_
 plot(final_data_frame_12_FW$h_foot_vector,final_data_frame_12_FW$sq_wasserstein_in_out_size_PERC)
 plot(final_data_frame_12_FW$h_foot_vector,final_data_frame_12_FW$sq_wasserstein_in_out_shape_PERC)
 
+
+##Adding distance
+final_data_frame_13 <- data.frame(final_data_frame_12, sq_wasserstein_in_out_distance)
+final_data_frame_13 <- final_data_frame_13[final_data_frame_13$ecosystem != "marine",]
+
+
+#Separate per type of network 
+final_data_frame_13_FW <- final_data_frame_13[final_data_frame_13$type=="antagonistic",]
+final_data_frame_13_MUT <- final_data_frame_13[final_data_frame_13$type=="mutualistic",]
+
+
+boxplot(final_data_frame_13$sq_wasserstein_in_out_distance~final_data_frame_13$type)
+
+aov1 <- aov(final_data_frame_13$sq_wasserstein_in_out_distance~final_data_frame_13$type)
+
+summary(aov1)
+
+#Explore relationships
+plot(final_data_frame_13_FW$h_foot_vector,final_data_frame_13_FW$sq_wasserstein_in_out_distance)
+plot(final_data_frame_13_MUT$h_foot_vector,final_data_frame_13_MUT$sq_wasserstein_in_out_distance)
+
+#Code Vinicius
+#27-10-2022
+require(vegan)
+bio=final_data_frame_13_MUT[,38:56]
+pca=rda(bio)
+biplot(pca, scaling = "symmetric", type = c("text", "points"))
+summary(pca)
+pca.scores=scores(pca)
+
+#extracting values per site
+pca.networks=pca.scores$sites
+
+#extracting first axes per site
+PCA1=pca.networks[,1];PCA1
+PCA2=pca.networks[,2];PCA2
+
+####Modeling mutualistic networks
+require(nlme)
+
+mod.lme_MUT=lm(sq_wasserstein_in_out_distance~h_foot_vector+solar_radiation+PCA1+PCA2+y,data=final_data_frame_13_MUT, na.action=na.omit)
+summary(mod.lme_MUT)
+plot_model(mod.lme_MUT)
+#extract  coefficients
+coef(mod.lme_MUT)
+
+
+library(parameters)
+
+#generate a html of lme results
+tab_model(mod.lme, digits=2,file = "assortativity_index_mutualism.html")
+
+#plot
+result=model_parameters(mod.lme_MUT)
+jpeg(file="assortativity_index_mutualism.jpeg")
+plot(result)
+
+#END
+##
+
+################################################################################
+# TREES
+################################################################################
+
+library(rpart)  ######
+
+names(final_data_frame_13_MUT)
+
+rpart_MUT <- rpart(sq_wasserstein_in_out_distance ~ bio1+bio4+bio12+bio15+solar_radiation+h_foot_vector+y, data = final_data_frame_13_MUT)
+
+library("rpart.plot") ######
+
+rpart.plot::rpart.plot(rpart_MUT)
+summary(rpart_MUT)
+
+
+rpart_FW <- rpart(sq_wasserstein_in_out_distance ~ bio1+bio4+bio12+bio15+solar_radiation+h_foot_vector+y, data = final_data_frame_13_FW)
+
+rpart.plot::rpart.plot(rpart_FW)
+summary(rpart_FW)
+
+
+
+library(party) ######
+
+rpart_MUT_2 <- ctree(sq_wasserstein_in_out_distance ~ bio1+bio4+bio12+bio15+solar_radiation+h_foot_vector+y, 
+      data = final_data_frame_13_MUT
+      )
+plot(rpart_MUT_2)
+
+
+rpart_FW_2 <- ctree(sq_wasserstein_in_out_distance ~ bio1+bio4+bio12+bio15+solar_radiation+h_foot_vector+y, 
+                     data = final_data_frame_13_FW
+)
+plot(rpart_FW_2)
+
+
+library(mvpart) ######
+
+#Create matrix with response variables
+responses_MUT <- cbind(final_data_frame_13_MUT$sq_wasserstein_in_out_location_PERC, final_data_frame_13_MUT$sq_wasserstein_in_out_size_PERC, final_data_frame_13_MUT$sq_wasserstein_in_out_shape_PERC)
+responses_MUT[is.na(responses_MUT)] <- 0 
+
+mvpart_MUT1 <- mvpart(
+  responses_MUT ~ bio1+bio4+bio12+bio15+solar_radiation+h_foot_vector+y, 
+  data = final_data_frame_13_MUT,
+  all.leaves = TRUE,  # annotate all nodes
+  rsq = TRUE,  # give "rsq" plot
+  pca = TRUE,  # plot PCA of group means and add species and site information
+  wgt.ave.pca = TRUE  # plot weighted averages across sites for species
+)
+
+##
+
+#Create matrix with response variables
+responses_FW <- cbind(final_data_frame_13_FW$sq_wasserstein_in_out_location_PERC, final_data_frame_13_FW$sq_wasserstein_in_out_size_PERC, final_data_frame_13_FW$sq_wasserstein_in_out_shape_PERC)
+responses_FW[is.na(responses_FW)] <- 0 
+
+mvpart_FW1 <- mvpart(
+  responses_FW ~ bio1+bio4+bio12+bio15+solar_radiation+h_foot_vector+y, 
+  data = final_data_frame_13_FW,
+  all.leaves = TRUE,  # annotate all nodes
+  rsq = TRUE,  # give "rsq" plot
+  pca = TRUE,  # plot PCA of group means and add species and site information
+  wgt.ave.pca = TRUE  # plot weighted averages across sites for species
+)
 
 
