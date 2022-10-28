@@ -435,6 +435,7 @@ PCA1_FW=pca.networks_FW[,1];PCA1
 PCA2_FW=pca.networks_FW[,2];PCA2
 
 
+
 mvpart(
   responses_FW ~ PCA1_FW+PCA2_FW+solar_radiation+h_foot_vector+y+ecosystem, 
   data = final_data_frame_13_FW,
