@@ -402,4 +402,6 @@ names(final_data_frame_13)
 final_data_frame_13_SPDF <- SpatialPointsDataFrame(coords = final_data_frame_13[,7:8], data = final_data_frame_13)
 rgdal::writeOGR(obj=final_data_frame_13_SPDF, dsn="tempdir", layer="final_data_frame_13_SPDF", driver="ESRI Shapefile")
 
-nrow(final_data_frame_13_SPDF)
+#nrow(final_data_frame_13_SPDF)
+#table(final_data_frame_13_SPDF$type)
+
