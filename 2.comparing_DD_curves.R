@@ -326,52 +326,44 @@ plot(result)
 #END
 ##
 
+
+
+####
+
+#Save to shapefile
+
+names(final_data_frame_13)
+
+final_data_frame_13_SPDF <- SpatialPointsDataFrame(coords = final_data_frame_13[,7:8], data = final_data_frame_13)
+rgdal::writeOGR(obj=final_data_frame_13_SPDF, dsn="tempdir", layer="final_data_frame_13_SPDF", driver="ESRI Shapefile")
+
+#nrow(final_data_frame_13_SPDF)
+#table(final_data_frame_13_SPDF$type)
+
+####
+
 ################################################################################
 # TREES
 ################################################################################
 
-library(rpart)  ######
-
-names(final_data_frame_13_MUT)
-
-rpart_MUT <- rpart(sq_wasserstein_in_out_distance ~ bio1+bio4+bio12+bio15+solar_radiation+h_foot_vector+y, data = final_data_frame_13_MUT)
-
-library("rpart.plot") ######
-
-rpart.plot::rpart.plot(rpart_MUT)
-summary(rpart_MUT)
-
-
-rpart_FW <- rpart(sq_wasserstein_in_out_distance ~ bio1+bio4+bio12+bio15+solar_radiation+h_foot_vector+y, data = final_data_frame_13_FW)
-
-rpart.plot::rpart.plot(rpart_FW)
-summary(rpart_FW)
-
-
-
-library(party) ######
-
-rpart_MUT_2 <- ctree(sq_wasserstein_in_out_distance ~ bio1+bio4+bio12+bio15+solar_radiation+h_foot_vector+y, 
-      data = final_data_frame_13_MUT
-      )
-plot(rpart_MUT_2)
-
-
-rpart_FW_2 <- ctree(sq_wasserstein_in_out_distance ~ bio1+bio4+bio12+bio15+solar_radiation+h_foot_vector+y, 
-                     data = final_data_frame_13_FW
-)
-plot(rpart_FW_2)
-
-
-library(mvpart) ######
+library(mvpart)
 
 #Create matrix with response variables
 responses_MUT <- cbind(final_data_frame_13_MUT$sq_wasserstein_in_out_location_PERC, final_data_frame_13_MUT$sq_wasserstein_in_out_size_PERC, final_data_frame_13_MUT$sq_wasserstein_in_out_shape_PERC)
-responses_MUT[is.na(responses_MUT)] <- 0 
+responses_MUT[is.na(responses_MUT)] <- 0
 
-mvpart_MUT1 <- mvpart(
-  responses_MUT ~ bio1+bio4+bio12+bio15+solar_radiation+h_foot_vector+y, 
+
+# First, remove the "distance from source" variable
+env <- subset(env, select = -das)
+
+# Create multivariate regression tree
+
+mvpart(
+  responses_MUT ~ bio1+bio4+bio12+bio15+solar_radiation+h_foot_vector+y+ecosystem, 
   data = final_data_frame_13_MUT,
+  xv = "min",
+  xval = nrow(responses_MUT), # number of cross-validations
+  xvmult = 100, # number of multiple cross-validations
   all.leaves = TRUE,  # annotate all nodes
   rsq = TRUE,  # give "rsq" plot
   pca = TRUE,  # plot PCA of group means and add species and site information
@@ -384,24 +376,75 @@ mvpart_MUT1 <- mvpart(
 responses_FW <- cbind(final_data_frame_13_FW$sq_wasserstein_in_out_location_PERC, final_data_frame_13_FW$sq_wasserstein_in_out_size_PERC, final_data_frame_13_FW$sq_wasserstein_in_out_shape_PERC)
 responses_FW[is.na(responses_FW)] <- 0 
 
-mvpart_FW1 <- mvpart(
+names(final_data_frame_13_FW)
+
+mvpart(
   responses_FW ~ bio1+bio4+bio12+bio15+solar_radiation+h_foot_vector+y, 
   data = final_data_frame_13_FW,
+  xv = "min",
+  xval = nrow(responses_FW), # number of cross-validations
+  xvmult = 100, # number of multiple cross-validations
   all.leaves = TRUE,  # annotate all nodes
   rsq = TRUE,  # give "rsq" plot
   pca = TRUE,  # plot PCA of group means and add species and site information
   wgt.ave.pca = TRUE  # plot weighted averages across sites for species
 )
 
+##Second try...####################
 
-####
-#Save to shapefile
+require(vegan)
+bio_MUT=final_data_frame_13_MUT[,38:56]
+pca=rda(bio_MUT)
+biplot(pca, scaling = "symmetric", type = c("text", "points"))
+summary(pca)
+pca.scores=scores(pca)
 
-names(final_data_frame_13)
+#extracting values per site
+pca.networks=pca.scores$sites
 
-final_data_frame_13_SPDF <- SpatialPointsDataFrame(coords = final_data_frame_13[,7:8], data = final_data_frame_13)
-rgdal::writeOGR(obj=final_data_frame_13_SPDF, dsn="tempdir", layer="final_data_frame_13_SPDF", driver="ESRI Shapefile")
+#extracting first axes per site
+PCA1_MUT=pca.networks[,1];PCA1
+PCA2_MUT=pca.networks[,2];PCA2
 
-#nrow(final_data_frame_13_SPDF)
-#table(final_data_frame_13_SPDF$type)
+
+mvpart(
+  responses_MUT ~ PCA1_MUT+PCA2_MUT+solar_radiation+h_foot_vector+y+ecosystem, 
+  data = final_data_frame_13_MUT,
+  xv = "min",
+  xval = nrow(responses_MUT), # number of cross-validations
+  xvmult = 100, # number of multiple cross-validations
+  all.leaves = TRUE,  # annotate all nodes
+  rsq = TRUE,  # give "rsq" plot
+  pca = TRUE,  # plot PCA of group means and add species and site information
+  wgt.ave.pca = TRUE  # plot weighted averages across sites for species
+)
+
+##
+
+bio_FW=final_data_frame_13_FW[,38:56]
+pca_FW=rda(bio_FW)
+biplot(pca_FW, scaling = "symmetric", type = c("text", "points"))
+summary(pca_FW)
+pca.scores_FW=scores(pca_FW)
+
+#extracting values per site
+pca.networks_FW=pca.scores_FW$sites
+
+#extracting first axes per site
+PCA1_FW=pca.networks_FW[,1];PCA1
+PCA2_FW=pca.networks_FW[,2];PCA2
+
+
+mvpart(
+  responses_FW ~ PCA1_FW+PCA2_FW+solar_radiation+h_foot_vector+y+ecosystem, 
+  data = final_data_frame_13_FW,
+  xv = "min",
+  xval = nrow(responses_FW), # number of cross-validations
+  xvmult = 100, # number of multiple cross-validations
+  all.leaves = TRUE,  # annotate all nodes
+  rsq = TRUE,  # give "rsq" plot
+  pca = TRUE,  # plot PCA of group means and add species and site information
+  wgt.ave.pca = TRUE  # plot weighted averages across sites for species
+)
+
 
