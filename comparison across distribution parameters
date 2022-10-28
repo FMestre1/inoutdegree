@@ -1,0 +1,38 @@
+require(beanplot)
+
+#mutualism
+data=load(file.choose())
+dados.mut=final_data_frame_12_MUT
+names(dados.mut)
+dim(dados.mut)
+dists=as.vector(rbind(dados.mut$sq_wasserstein_in_out_location_PERC,dados.mut$sq_wasserstein_in_out_size_PERC,dados.mut$sq_wasserstein_in_out_shape_PERC))
+dists[is.na(dists)] <- 0
+fator=c(rep("Location",152),rep("Size",152),rep("Shape",152))
+par(mfrow = c(2,2))
+beanplot(dists~fator,col="#0b9404", main="Mutualism")
+title("A", adj = 0.05, line = -1.5)
+mod=aov(dists~fator)
+tuckey=TukeyHSD(mod)
+plotTukeysHSD(tuckey)
+title("C", adj = 0.05, line = -1.5)
+dados.ant$ecosystem
+
+#antagonism
+dados.ant=dados.ant.terrestre
+
+data=load(file.choose())
+dados.ant=final_data_frame_12_FW
+names(dados.ant)
+dim(dados.ant)
+dists.ant=as.vector(rbind(dados.ant$sq_wasserstein_in_out_location_PERC,dados.ant$sq_wasserstein_in_out_size_PERC,dados.ant$sq_wasserstein_in_out_shape_PERC))
+dists.ant[is.na(dists.ant)] <- 0
+fator.ant=c(rep("Location",144),rep("Size",144),rep("Shape",144))
+beanplot(dists.ant~fator.ant,col="#e64b09", main="Antagonism")
+title("B", adj = 0.05, line = -1.5)
+
+
+
+mod=aov(dists.ant~fator.ant)
+tuckey=TukeyHSD(mod)
+plotTukeysHSD(tuckey)
+title("D", adj = 0.05, line = -1.5)
