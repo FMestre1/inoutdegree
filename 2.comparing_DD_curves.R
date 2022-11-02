@@ -343,7 +343,7 @@ rgdal::writeOGR(obj=final_data_frame_13_SPDF, dsn="tempdir", layer="final_data_f
 ####
 
 ################################################################################
-# TREES
+#                                   TREES
 ################################################################################
 
 library(mvpart)
@@ -356,10 +356,10 @@ responses_MUT[is.na(responses_MUT)] <- 0
 # First, remove the "distance from source" variable
 env <- subset(env, select = -das)
 
-# Create multivariate regression tree
 
+# Create multivariate regression tree
 mvpart(
-  responses_MUT ~ bio1+bio4+bio12+bio15+solar_radiation+h_foot_vector+y+ecosystem, 
+  responses_MUT ~ y+bio1+bio4+bio12+bio15+solar_radiation+h_foot_vector+ecosystem, 
   data = final_data_frame_13_MUT,
   xv = "min",
   xval = nrow(responses_MUT), # number of cross-validations

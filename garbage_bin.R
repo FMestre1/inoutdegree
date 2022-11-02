@@ -42,3 +42,20 @@ rpart_FW_2 <- ctree(sq_wasserstein_in_out_distance ~ bio1+bio4+bio12+bio15+solar
 )
 plot(rpart_FW_2)
 
+################################################################################
+
+#Spatial autocorr
+require(adespatial)
+
+#final_data_frame_13_MUT
+autocorr_MUT <- adespatial::dbmem(
+  xyORdist = final_data_frame_13_MUT[,7:8],
+  MEM.autocor = "positive"
+)
+
+#final_data_frame_13_FW
+autocorr_FW <- adespatial::dbmem(
+  xyORdist = final_data_frame_13_FW[,7:8],
+  MEM.autocor = "positive"
+)
+
