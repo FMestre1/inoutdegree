@@ -389,3 +389,81 @@ mvpart(
   pca = TRUE,  # plot PCA of group means and add species and site information
   wgt.ave.pca = TRUE  # plot weighted averages across sites for species
 )
+
+################################################################################
+# After de meeting...
+################################################################################
+
+#FMestre
+#04-11-2022
+
+library(igraph)
+
+#Derive the average consumer/resource ratio for each network
+#all_mangal_objects_selected_igraph
+
+cr_ratio_vector <- c()
+
+for(i in 1:length(all_mangal_objects_selected_igraph)){
+t2 <- all_mangal_objects_selected_igraph[[i]]
+nr_preys <- length(unique(as.numeric(as_edgelist(t2, names = TRUE)[,1])))#preys
+nr_predators <- length(unique(as.numeric(as_edgelist(t2, names = TRUE)[,2])))#predators
+cr_ratio_vector[i] <- nr_predators/nr_preys  
+  
+}
+
+#length(cr_ratio_vector)
+
+#Create another data frame with the CR ratio
+final_data_frame_14 <- data.frame(final_data_frame_12, cr_ratio_vector)
+final_data_frame_14 <- final_data_frame_14[final_data_frame_14$ecosystem != "marine",]
+nrow(final_data_frame_14)
+
+#Separate it per type of network 
+final_data_frame_14_FW <- final_data_frame_14[final_data_frame_14$type=="antagonistic",]
+final_data_frame_14_MUT <- final_data_frame_14[final_data_frame_14$type=="mutualistic",]
+
+plot(final_data_frame_14_FW$cr_ratio_vector, final_data_frame_14_FW$h_foot_vector, xlab = "CR Ratio", ylab = "Human footprint")
+plot(final_data_frame_14_FW$cr_ratio_vector, final_data_frame_14_FW$solar_radiation, xlab = "CR Ratio", ylab = "Solar radiation")
+
+##
+
+library(mvpart)
+
+MUT_tree <- mvpart(
+  responses_MUT ~ y+solar_radiation+h_foot_vector+ecosystem+cr_ratio_vector, 
+  data = final_data_frame_14_MUT,
+  xv = "min",
+  xval = nrow(responses_MUT), # number of cross-validations
+  xvmult = 100, # number of multiple cross-validations
+  all.leaves = TRUE,  # annotate all nodes
+  rsq = TRUE#,  # give "rsq" plot
+  #pca = TRUE,  # plot PCA of group means and add species and site information
+  #wgt.ave.pca = TRUE  # plot weighted averages across sites for species
+)
+
+names(final_data_frame_14_FW)
+
+FW_tree <- mvpart(
+  responses_FW ~ y+solar_radiation+h_foot_vector+cr_ratio_vector, 
+  data = final_data_frame_14_FW,
+  xv = "min",
+  xval = nrow(responses_FW), # number of cross-validations
+  xvmult = 100, # number of multiple cross-validations
+  all.leaves = TRUE,  # annotate all nodes
+  rsq = TRUE#,  # give "rsq" plot
+  #pca = TRUE,  # plot PCA of group means and add species and site information
+  #wgt.ave.pca = TRUE  # plot weighted averages across sites for species
+)
+
+MUT_tree_pruned <- prune(MUT_tree, cp=0.1)
+FW_tree_pruned <- prune(FW_tree, cp=0.1)
+
+#
+library(rpart.plot)
+#
+rpart.plot::rpart.plot(FW_tree)
+rpart.plot::rpart.plot(FW_tree_pruned)
+rpart.plot::rpart.plot(MUT_tree)
+rpart.plot::rpart.plot(MUT_tree_pruned)
+
