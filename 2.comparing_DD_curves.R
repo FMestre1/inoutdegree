@@ -458,7 +458,6 @@ FW_tree <- mvpart(
 
 MUT_tree_pruned <- prune(MUT_tree, cp=0.1)
 FW_tree_pruned <- prune(FW_tree, cp=0.1)
-
 #
 library(rpart.plot)
 #
