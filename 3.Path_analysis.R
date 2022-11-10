@@ -55,20 +55,36 @@ names(final_data_frame_14_FW_standardize) <- c(
 
 #Specifiy the model
 model_fw <-'
-cr_ratio_vector ~ sq_wasserstein_in_out_location_PERC+sq_wasserstein_in_out_size_PERC+sq_wasserstein_in_out_shape_PERC
+#cr_ratio_vector ~ sq_wasserstein_in_out_location_PERC+sq_wasserstein_in_out_size_PERC+sq_wasserstein_in_out_shape_PERC
 cr_ratio_vector ~ y+solar_radiation+h_foot_vector+bio4+bio15
 #
-sq_wasserstein_in_out_size_PERC~~sq_wasserstein_in_out_size_PERC
-sq_wasserstein_in_out_location_PERC~~sq_wasserstein_in_out_location_PERC
-sq_wasserstein_in_out_shape_PERC~~sq_wasserstein_in_out_shape_PERC
+#sq_wasserstein_in_out_size_PERC~~sq_wasserstein_in_out_size_PERC
+#sq_wasserstein_in_out_location_PERC~~sq_wasserstein_in_out_location_PERC
+#sq_wasserstein_in_out_shape_PERC~~sq_wasserstein_in_out_shape_PERC
 #
-sq_wasserstein_in_out_size_PERC ~ y+solar_radiation+h_foot_vector+bio4+bio15
-sq_wasserstein_in_out_location_PERC ~ y+solar_radiation+h_foot_vector+bio4+bio15
-sq_wasserstein_in_out_shape_PERC ~ y+solar_radiation+h_foot_vector+bio4+bio15
+sq_wasserstein_in_out_size_PERC ~ y+solar_radiation+h_foot_vector+bio4+bio15+cr_ratio_vector
+sq_wasserstein_in_out_location_PERC ~ y+solar_radiation+h_foot_vector+bio4+bio15+cr_ratio_vector
+sq_wasserstein_in_out_shape_PERC ~ y+solar_radiation+h_foot_vector+bio4+bio15+cr_ratio_vector
+'
+##########
+model_fw <- ' 
+## regressions ##
+cr_ratio_vector ~ y+solar_radiation+h_foot_vector+bio4+bio15
+#
+# latent variable definitions
+sq_wasserstein_in_out_size_PERC ~ y+solar_radiation+h_foot_vector+bio4+bio15+cr_ratio_vector
+sq_wasserstein_in_out_location_PERC ~ y+solar_radiation+h_foot_vector+bio4+bio15+cr_ratio_vector
+sq_wasserstein_in_out_shape_PERC ~ y+solar_radiation+h_foot_vector+bio4+bio15+cr_ratio_vector
+#
+# variances and covariances
+#cr_ratio_vector ~~ cr_ratio_vector
+# intercepts
+cr_ratio_vector ~ 1
 '
 
 #Fit
-fit_fw <- lavaan(model_fw, data = final_data_frame_14_FW_standardize)
+rm(fit_fw)
+fit_fw <- lavaan::sem(model_fw, data = final_data_frame_14_FW_standardize)
 
 #Summary
 summary(fit_fw, fit.measures = TRUE, standardized=TRUE, rsquare=TRUE)
