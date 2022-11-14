@@ -121,4 +121,16 @@ mvpart(
 )
 
 
-
+model_fw <-'
+#cr_ratio_vector ~ sq_wasserstein_in_out_location_PERC+sq_wasserstein_in_out_size_PERC+sq_wasserstein_in_out_shape_PERC
+cr_ratio_vector ~ y+solar_radiation+h_foot_vector+bio4+bio15
+#
+#sq_wasserstein_in_out_size_PERC~~sq_wasserstein_in_out_size_PERC
+#sq_wasserstein_in_out_location_PERC~~sq_wasserstein_in_out_location_PERC
+#sq_wasserstein_in_out_shape_PERC~~sq_wasserstein_in_out_shape_PERC
+#
+sq_wasserstein_in_out_size_PERC ~ y+solar_radiation+h_foot_vector+bio4+bio15+cr_ratio_vector
+sq_wasserstein_in_out_location_PERC ~ y+solar_radiation+h_foot_vector+bio4+bio15+cr_ratio_vector
+sq_wasserstein_in_out_shape_PERC ~ y+solar_radiation+h_foot_vector+bio4+bio15+cr_ratio_vector
+'
+##########

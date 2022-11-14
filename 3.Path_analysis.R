@@ -29,19 +29,32 @@ names(final_data_frame_14_FW)
 
 
 #Standardize variables
-final_data_frame_14_FW_standardize <- data.frame(
+names(final_data_frame_14_FW)
+final_data_frame_14_FW$hanpp_vector
+
+final_data_frame_14_FW_vars <- data.frame(
+  final_data_frame_14_FW$network_number,
+  scale(final_data_frame_14_FW$nnodes),
+  scale(final_data_frame_14_FW$nedges),
+  final_data_frame_14_FW$type,
+  final_data_frame_14_FW$ecosystem,
   final_data_frame_14_FW$cr_ratio_vector,
   final_data_frame_14_FW$sq_wasserstein_in_out_location_PERC,
   final_data_frame_14_FW$sq_wasserstein_in_out_size_PERC,
   final_data_frame_14_FW$sq_wasserstein_in_out_shape_PERC,
   final_data_frame_14_FW$y,
-  final_data_frame_14_FW$bio4,
-  final_data_frame_14_FW$bio15,
-  final_data_frame_14_FW$solar_radiation,
-  final_data_frame_14_FW$h_foot_vector
+  scale(final_data_frame_14_FW$bio4),
+  scale(final_data_frame_14_FW$bio15),
+  scale(final_data_frame_14_FW$solar_radiation),
+  scale(final_data_frame_14_FW$h_foot_vector)
 )
 
-names(final_data_frame_14_FW_standardize) <- c(
+names(final_data_frame_14_FW_vars) <- c(
+  "network_number",
+  "nnodes",
+  "nedges",
+  "type",
+  "ecosystem",
   "cr_ratio_vector",
   "sq_wasserstein_in_out_location_PERC",
   "sq_wasserstein_in_out_size_PERC",
@@ -53,47 +66,49 @@ names(final_data_frame_14_FW_standardize) <- c(
   "h_foot_vector"
   )
 
+#View(final_data_frame_14_FW_vars)
+
+##
+#Test with glm
+
+#t1 <- glm(cr_ratio_vector ~ y+solar_radiation+h_foot_vector+bio4+bio15,
+#          data = final_data_frame_14_FW_vars)
+#summary(t1)
+#rm(t1)
+
+##
+
 #Specifiy the model
-model_fw <-'
-#cr_ratio_vector ~ sq_wasserstein_in_out_location_PERC+sq_wasserstein_in_out_size_PERC+sq_wasserstein_in_out_shape_PERC
-cr_ratio_vector ~ y+solar_radiation+h_foot_vector+bio4+bio15
-#
-#sq_wasserstein_in_out_size_PERC~~sq_wasserstein_in_out_size_PERC
-#sq_wasserstein_in_out_location_PERC~~sq_wasserstein_in_out_location_PERC
-#sq_wasserstein_in_out_shape_PERC~~sq_wasserstein_in_out_shape_PERC
-#
-sq_wasserstein_in_out_size_PERC ~ y+solar_radiation+h_foot_vector+bio4+bio15+cr_ratio_vector
-sq_wasserstein_in_out_location_PERC ~ y+solar_radiation+h_foot_vector+bio4+bio15+cr_ratio_vector
-sq_wasserstein_in_out_shape_PERC ~ y+solar_radiation+h_foot_vector+bio4+bio15+cr_ratio_vector
-'
-##########
 model_fw <- ' 
-## regressions ##
-cr_ratio_vector ~ y+solar_radiation+h_foot_vector+bio4+bio15
-#
-# latent variable definitions
-sq_wasserstein_in_out_size_PERC ~ y+solar_radiation+h_foot_vector+bio4+bio15+cr_ratio_vector
-sq_wasserstein_in_out_location_PERC ~ y+solar_radiation+h_foot_vector+bio4+bio15+cr_ratio_vector
-sq_wasserstein_in_out_shape_PERC ~ y+solar_radiation+h_foot_vector+bio4+bio15+cr_ratio_vector
-#
-# variances and covariances
+  ## regressions ##
+cr_ratio_vector ~ y+solar_radiation+h_foot_vector+bio4+bio15+nnodes+nedges
+nnodes ~ y+solar_radiation+h_foot_vector+bio4+bio15
+nedges ~ y+solar_radiation+h_foot_vector+bio4+bio15
+##
+  ## variances and covariances ##
 #cr_ratio_vector ~~ cr_ratio_vector
-# intercepts
-cr_ratio_vector ~ 1
+  ## intercepts ##
+#cr_ratio_vector ~ 1
 '
 
 #Fit
 rm(fit_fw)
-fit_fw <- lavaan::sem(model_fw, data = final_data_frame_14_FW_standardize)
+fit_fw <- lavaan::sem(model_fw, data = final_data_frame_14_FW_vars)
 
 #Summary
 summary(fit_fw, fit.measures = TRUE, standardized=TRUE, rsquare=TRUE)
 
 #Plot
-semPlot::semPaths(fit_fw, "par",
-                  sizeMan = 15, 
-                  sizeInt = 15, 
-                  sizeLat = 15,
-                  edge.label.cex=1.5,
-                  fade=FALSE
+semPlot::semPaths(fit_fw, 
+                  what = "std",
+                  layout = "tree",
+                  edge.label.cex = 2.0,
+                  label.cex = 2,
+                  curvePivot = FALSE, 
+                  rotation = 3,
+                  fade=TRUE,
+                  #whatLabels = "hide",
+                  nCharNodes = FALSE
                   )
+
+

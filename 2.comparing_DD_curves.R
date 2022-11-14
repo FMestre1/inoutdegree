@@ -466,3 +466,77 @@ rpart.plot::rpart.plot(FW_tree_pruned)
 rpart.plot::rpart.plot(MUT_tree)
 rpart.plot::rpart.plot(MUT_tree_pruned)
 
+
+################################################################################
+# Creating trees with the distance
+################################################################################
+#14-11-2022
+#FMestre
+
+sq_wasserstein_in_out2 <- data.frame(code_network,
+                                    sq_wasserstein_in_out_distance, 
+                                    sq_wasserstein_in_out_location_PERC,
+                                    sq_wasserstein_in_out_size_PERC,
+                                    sq_wasserstein_in_out_shape_PERC
+)
+
+retrieve_codes <- stringr::str_split(sq_wasserstein_in_out2$code_network, "_")
+
+retrieve_codes2 <- c()
+
+for(i in 1:length(retrieve_codes)){
+  
+  
+  retrieve_codes2[i] <- retrieve_codes[[i]][2]
+  
+  
+  
+  
+  
+}
+
+sq_wasserstein_in_out2 <- data.frame(retrieve_codes2,
+                                     sq_wasserstein_in_out2
+                                     )
+
+sq_wasserstein_in_out2 <- data.frame(sq_wasserstein_in_out2$retrieve_codes2,
+                                     sq_wasserstein_in_out2$sq_wasserstein_in_out_distance)
+
+names(sq_wasserstein_in_out2) <- c("codes", "distance")
+
+head(sq_wasserstein_in_out2)
+
+
+final_data_frame_15 <- merge(x=final_data_frame_14, y=sq_wasserstein_in_out2, by.x = "network_number", by.y = "codes")
+nrow(final_data_frame_15)
+View(final_data_frame_15)
+
+
+#Separate it per type of network 
+final_data_frame_15_FW <- final_data_frame_15[final_data_frame_15$type=="antagonistic",]
+final_data_frame_15_MUT <- final_data_frame_15[final_data_frame_15$type=="mutualistic",]
+
+
+names(final_data_frame_15_FW)
+
+#
+
+rpart_FW_3 <- rpart::rpart(distance ~ bio1+bio4+bio12+bio15+solar_radiation+h_foot_vector+y, 
+                    data = final_data_frame_15_FW)
+FW_tree_pruned_3 <- prune(rpart_FW_3, cp=0.1)
+#rpart.plot::rpart.plot(FW_tree_pruned_3)
+rpart.plot::rpart.plot(rpart_FW_3)
+
+#
+
+
+rpart_MUT_3 <- rpart::rpart(distance ~ bio1+bio4+bio12+bio15+solar_radiation+h_foot_vector+y, 
+                           data = final_data_frame_15_MUT)
+MUT_tree_pruned_3 <- prune(rpart_MUT_3, cp=0.1)
+#rpart.plot::rpart.plot(MUT_tree_pruned_3)
+rpart.plot::rpart.plot(rpart_MUT_3)
+
+
+
+
+
