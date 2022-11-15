@@ -431,7 +431,7 @@ plot(final_data_frame_14_FW$cr_ratio_vector, final_data_frame_14_FW$solar_radiat
 library(mvpart)
 
 MUT_tree <- mvpart(
-  responses_MUT ~ y+solar_radiation+h_foot_vector+ecosystem+cr_ratio_vector, 
+  responses_MUT ~ y+solar_radiation+h_foot_vector+ecosystem, 
   data = final_data_frame_14_MUT,
   xv = "min",
   xval = nrow(responses_MUT), # number of cross-validations
@@ -445,7 +445,7 @@ MUT_tree <- mvpart(
 names(final_data_frame_14_FW)
 
 FW_tree <- mvpart(
-  responses_FW ~ y+solar_radiation+h_foot_vector+cr_ratio_vector, 
+  responses_FW ~ y+solar_radiation+h_foot_vector, 
   data = final_data_frame_14_FW,
   xv = "min",
   xval = nrow(responses_FW), # number of cross-validations
@@ -468,7 +468,7 @@ rpart.plot::rpart.plot(MUT_tree_pruned)
 
 
 ################################################################################
-# Creating trees with the distance
+# Creating trees with the overall distance only
 ################################################################################
 #14-11-2022
 #FMestre
@@ -520,23 +520,115 @@ final_data_frame_15_MUT <- final_data_frame_15[final_data_frame_15$type=="mutual
 names(final_data_frame_15_FW)
 
 #
+library(ggplot2)
 
-rpart_FW_3 <- rpart::rpart(distance ~ bio1+bio4+bio12+bio15+solar_radiation+h_foot_vector+y, 
-                    data = final_data_frame_15_FW)
-FW_tree_pruned_3 <- prune(rpart_FW_3, cp=0.1)
+#plot(final_data_frame_15_MUT$cr_ratio_vector, final_data_frame_15_MUT$sq_wasserstein_in_out_location_PERC)
+
+ggplot2::ggplot(final_data_frame_15_FW, aes(x=cr_ratio_vector, y=distance)) + 
+  geom_point()+
+  #stat_smooth(method = "lm", formula = y ~ x, size = 1) +
+  xlab("Consumer-Resource Ratio") + ylab("Distance") +
+  #theme(legend.position="none")
+  theme_minimal()+
+  geom_smooth(method="auto", se=FALSE, fullrange=FALSE, level=0.95)
+  #stat_smooth(method = 'lm', formula = y ~ poly(x,2), aes(colour = 'polynomial'), se= FALSE)
+
+
+#
+
+#final_data_frame_15_MUT[final_data_frame_15_MUT$cr_ratio_vector>4,]
+
+ggplot2::ggplot(final_data_frame_15_MUT, aes(x=cr_ratio_vector, y=distance)) + 
+  geom_point()+
+  #stat_smooth(method = "lm", formula = y ~ x, size = 1) + 
+  xlab("Consumer-Resource Ratio") + ylab("Distance") +
+  #theme(legend.position="none")
+  theme_minimal()+
+  geom_smooth(method="auto", se=FALSE, fullrange=TRUE, level=0.95)
+  #stat_smooth(method = 'lm', formula = y ~ poly(x,2), aes(colour = 'polynomial'), se= FALSE)
+
+#lm1 <- lm(cr_ratio_vector~distance, data = final_data_frame_15_MUT)
+#summary(lm1)
+
+################################################################################
+
+final_data_frame_15_FW_2 <- final_data_frame_15_FW[,c("distance", "bio1", "bio4", "bio12", "bio15", "solar_radiation", "h_foot_vector", "y")]
+names(final_data_frame_15_FW_2)[6] <- "solar_radiation"
+names(final_data_frame_15_FW_2)[7] <- "human_footprint"
+names(final_data_frame_15_FW_2)[8] <- "latitude"
+#
+final_data_frame_15_MUT_2 <- final_data_frame_15_MUT[,c("distance", "bio1", "bio4", "bio12", "bio15", "solar_radiation", "h_foot_vector", "y")]
+names(final_data_frame_15_MUT_2)[6] <- "solar_radiation"
+names(final_data_frame_15_MUT_2)[7] <- "human_footprint"
+names(final_data_frame_15_MUT_2)[8] <- "latitude"
+#
+
+rpart_FW_3 <- rpart::rpart(distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint+latitude, 
+                    data = final_data_frame_15_FW_2)
+#FW_tree_pruned_3 <- prune(rpart_FW_3, cp=0.1)
 #rpart.plot::rpart.plot(FW_tree_pruned_3)
 rpart.plot::rpart.plot(rpart_FW_3)
 
 #
 
-
-rpart_MUT_3 <- rpart::rpart(distance ~ bio1+bio4+bio12+bio15+solar_radiation+h_foot_vector+y, 
-                           data = final_data_frame_15_MUT)
-MUT_tree_pruned_3 <- prune(rpart_MUT_3, cp=0.1)
+rpart_MUT_3 <- rpart::rpart(distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint+latitude, 
+                           data = final_data_frame_15_MUT_2)
+#MUT_tree_pruned_3 <- prune(rpart_MUT_3, cp=0.1)
 #rpart.plot::rpart.plot(MUT_tree_pruned_3)
 rpart.plot::rpart.plot(rpart_MUT_3)
 
+##REcovering multivariate trees with 3 distances
 
+library(mvpart)
+
+final_data_frame_14_MUT_2 <- final_data_frame_14_MUT[,c("bio1", "bio4", "bio12", "bio15", "solar_radiation", "h_foot_vector", "y")]
+names(final_data_frame_14_MUT_2)[6] <- "human_footprint"
+names(final_data_frame_14_MUT_2)[7] <- "latitude"
+
+MUT_tree <- mvpart(
+  responses_MUT ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint+latitude, 
+  data = final_data_frame_14_MUT_2,
+  xv = "min",
+  xval = nrow(responses_MUT), # number of cross-validations
+  xvmult = 100, # number of multiple cross-validations
+  all.leaves = TRUE,  # annotate all nodes
+  rsq = TRUE#,  # give "rsq" plot
+  #pca = TRUE,  # plot PCA of group means and add species and site information
+  #wgt.ave.pca = TRUE  # plot weighted averages across sites for species
+)
+
+
+final_data_frame_14_FW_2 <- final_data_frame_14_FW[,c("bio1", "bio4", "bio12", "bio15", "solar_radiation", "h_foot_vector", "y")]
+names(final_data_frame_14_FW_2)[6] <- "human_footprint"
+names(final_data_frame_14_FW_2)[7] <- "latitude"
+
+FW_tree <- mvpart(
+  responses_FW ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint+latitude, 
+  data = final_data_frame_14_FW_2,
+  xv = "min",
+  xval = nrow(responses_FW), # number of cross-validations
+  xvmult = 100, # number of multiple cross-validations
+  all.leaves = TRUE,  # annotate all nodes
+  rsq = TRUE#,  # give "rsq" plot
+  #pca = TRUE,  # plot PCA of group means and add species and site information
+  #wgt.ave.pca = TRUE  # plot weighted averages across sites for species
+)
+
+
+
+library(rpart.plot)
+#3 distances
+#rpart.plot(MUT_tree, box.palette="orange4", shadow.col="gray", nn=TRUE)
+#rpart.plot(FW_tree, box.palette="yellow4", shadow.col="gray", nn=TRUE)
+
+#overall distance
+rpart.plot(rpart_MUT_3, box.palette="orange3", shadow.col="gray", nn=TRUE)
+rpart.plot(rpart_FW_3, box.palette="yellow3", shadow.col="gray", nn=TRUE)
+
+
+
+
+###
 
 
 
