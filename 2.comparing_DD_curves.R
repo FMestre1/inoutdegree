@@ -629,6 +629,62 @@ rpart.plot(rpart_FW_3, box.palette="yellow3", shadow.col="gray", nn=TRUE)
 
 
 ###
+#21-11-2022
+
+library(dplyr)       #for data wrangling
+library(e1071)       #for calculating variable importance
+library(caret)       #for general model fitting
+library(rpart)       #for fitting decision trees
+library(ipred)       #for fitting bagged decision trees
 
 
 
+bag_FW <- bagging(
+  formula = distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint+latitude,
+  data = final_data_frame_15_FW_2,
+  nbagg = nrow(final_data_frame_15_FW_2),   
+  coob = TRUE,
+  control = rpart.control(minsplit = 2, cp = 0)
+)
+
+bag_FW
+
+#calculate variable importance
+VI_fw <- varImp(bag_FW)
+VI_fw <- data.frame(var=row.names(VI_fw), imp=VI_fw[,1])
+
+#sort variable importance descending
+VI_plot_fw <- VI_fw[order(VI_fw$imp, decreasing=TRUE),]
+
+#visualize variable importance with horizontal bar plot
+barplot(VI_plot_fw$imp,
+        names.arg=VI_plot_fw$var,
+        horiz=TRUE,
+        col='steelblue',
+        xlab='Variable Importance')
+
+#####
+
+bag_MUT <- bagging(
+  formula = distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint+latitude,
+  data = final_data_frame_15_MUT_2,
+  nbagg = nrow(final_data_frame_15_MUT_2),   
+  coob = TRUE,
+  control = rpart.control(minsplit = 2, cp = 0)
+)
+
+bag_MUT
+
+#calculate variable importance
+VI_mu <- varImp(bag_MUT)
+VI_mu <- data.frame(var=row.names(VI_mu), imp=VI_mu[,1])
+
+#sort variable importance descending
+VI_plot_mu <- VI_mu[order(VI_mu$imp, decreasing=TRUE),]
+
+#visualize variable importance with horizontal bar plot
+barplot(VI_plot_mu$imp,
+        names.arg=VI_plot_mu$var,
+        horiz=TRUE,
+        col='steelblue',
+        xlab='Variable Importance')
