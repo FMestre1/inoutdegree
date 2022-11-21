@@ -529,9 +529,12 @@ ggplot2::ggplot(final_data_frame_15_FW, aes(x=cr_ratio_vector, y=distance)) +
   #stat_smooth(method = "lm", formula = y ~ x, size = 1) +
   xlab("Consumer-Resource Ratio") + ylab("Distance") +
   #theme(legend.position="none")
-  theme_minimal()+
-  geom_smooth(method="auto", se=FALSE, fullrange=FALSE, level=0.95)
-  #stat_smooth(method = 'lm', formula = y ~ poly(x,2), aes(colour = 'polynomial'), se= FALSE)
+  theme_minimal() +
+  #geom_smooth(formula= (y ~ x, se=TRUE, fullrange=FALSE, level=0.95)
+  #stat_smooth(method = 'lm', formula = y ~ x, aes(colour = 'polynomial'), se= FALSE)
+  stat_smooth(method = 'nls', formula = y ~ a*exp(b *x), 
+            se = FALSE, start = list(a=1,b=1))
+  
 
 
 #
@@ -544,8 +547,10 @@ ggplot2::ggplot(final_data_frame_15_MUT, aes(x=cr_ratio_vector, y=distance)) +
   xlab("Consumer-Resource Ratio") + ylab("Distance") +
   #theme(legend.position="none")
   theme_minimal()+
-  geom_smooth(method="auto", se=FALSE, fullrange=TRUE, level=0.95)
+  #geom_smooth(formula= (y ~ log(x)), se=TRUE, fullrange=TRUE, level=0.95)
   #stat_smooth(method = 'lm', formula = y ~ poly(x,2), aes(colour = 'polynomial'), se= FALSE)
+  stat_smooth(method = 'nls', formula = y ~ a*exp(b *x), 
+              se = FALSE, start = list(a=1,b=1))
 
 #lm1 <- lm(cr_ratio_vector~distance, data = final_data_frame_15_MUT)
 #summary(lm1)
@@ -688,3 +693,77 @@ barplot(VI_plot_mu$imp,
         horiz=TRUE,
         col='steelblue',
         xlab='Variable Importance')
+
+
+################################################################################
+#                      GENERALITY & VULNERABILITY VS LATITUDE
+################################################################################
+#FMestre
+#21-11-2022
+
+length(final_data_frame_14_MUT$network_number)
+length(final_data_frame_14_FW$network_number)
+
+
+retain_id <- c(final_data_frame_14_MUT$network_number, final_data_frame_14_FW$network_number)
+retain_id <- stringr::str_split(retain_id, "#")
+
+retain_id_2 <- c()
+
+for(i in 1:length(retain_id)) retain_id_2[i] <- as.numeric(retain_id[[i]][2])
+
+#
+nrow(final_data_frame_15_MUT_2) + nrow(final_data_frame_15_FW_2)
+length(all_mangal_objects_selected_igraph)
+length(all_mangal_objects_selected)
+
+#all_mangal_objects_selected_igraph <- as.igraph(all_mangal_objects_selected)
+
+all_mangal_objects_selected_igraph_RETAINED <- list()
+
+#all_mangal_objects_selected[[1]]$network$network_id
+
+for(i in 1:length(retain_id_2)){
+  
+  id_1 <- retain_id_2[i]
+  
+  for(j in 1:length(all_mangal_objects_selected)){
+    
+    #if(all_mangal_objects_selected[[j]]$network$network_id == id_1) all_mangal_objects_selected_igraph_RETAINED[[j]] <- all_mangal_objects_selected_igraph[[j]]
+    #if(all_mangal_objects_selected[[j]]$network$network_id == id_1) all_mangal_objects_selected_igraph_RETAINED <- c(all_mangal_objects_selected_igraph_RETAINED, all_mangal_objects_selected_igraph[[j]])
+    if(all_mangal_objects_selected[[j]]$network$network_id == id_1) all_mangal_objects_selected_igraph_RETAINED[[length(all_mangal_objects_selected_igraph_RETAINED)+1]] <- all_mangal_objects_selected_igraph[[j]]
+    
+    
+     }
+
+} 
+
+length(all_mangal_objects_selected_igraph_RETAINED)
+length(all_mangal_objects_selected)
+length(retain_id_2)
+
+
+vuln <- c()
+gen <- c()
+
+library(igraph)
+
+for(i in 1:length(all_mangal_objects_selected_igraph_RETAINED)){
+  t3 <- all_mangal_objects_selected_igraph_RETAINED[[i]]
+  nr_preys <- length(unique(as.numeric(as_edgelist(t3, names = TRUE)[,1])))#preys
+  nr_predators <- length(unique(as.numeric(as_edgelist(t3, names = TRUE)[,2])))#predators
+  
+  vuln[i] <-  nr_predators/nr_preys
+  gen[i] <-  nr_preys/nr_predators
+  
+}
+
+
+final_data_frame_16_MUT <- data.frame(final_data_frame_14_MUT, vuln[1:152], gen[1:152])
+final_data_frame_16_FW <- data.frame(final_data_frame_14_FW, vuln[153:296], gen[153:296])
+#
+plot(final_data_frame_16_MUT$vuln.1.152., final_data_frame_16_MUT$y)
+plot(final_data_frame_16_FW$vuln.153.296., final_data_frame_16_FW$y)
+#
+plot(final_data_frame_16_MUT$gen.1.152., final_data_frame_16_MUT$y)
+plot(final_data_frame_16_FW$gen.153.296., final_data_frame_16_FW$y)
