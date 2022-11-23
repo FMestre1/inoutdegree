@@ -762,8 +762,37 @@ for(i in 1:length(all_mangal_objects_selected_igraph_RETAINED)){
 final_data_frame_16_MUT <- data.frame(final_data_frame_14_MUT, vuln[1:152], gen[1:152])
 final_data_frame_16_FW <- data.frame(final_data_frame_14_FW, vuln[153:296], gen[153:296])
 #
-plot(final_data_frame_16_MUT$vuln.1.152., final_data_frame_16_MUT$y)
-plot(final_data_frame_16_FW$vuln.153.296., final_data_frame_16_FW$y)
-#
-plot(final_data_frame_16_MUT$gen.1.152., final_data_frame_16_MUT$y)
-plot(final_data_frame_16_FW$gen.153.296., final_data_frame_16_FW$y)
+
+
+#PLOT
+
+#Vulnerability - Mutualistic networks
+ggplot2::ggplot(final_data_frame_16_MUT, aes(x=vuln.1.152., y=y)) + 
+  geom_point()+
+  xlab("Vulnerability") + ylab("Latitude") + ggtitle("Mutualistic networks") +
+  theme_minimal() 
+  #+ stat_smooth(method = 'nls', formula = y ~ a*exp(b *x), se = FALSE, start = list(a=1,b=1))
+
+#Vulnerability - Antagonistic networks
+ggplot2::ggplot(final_data_frame_16_FW, aes(x=vuln.153.296., y=y)) + 
+  geom_point()+
+  xlab("Vulnerability") + ylab("Latitude") + ggtitle("Antagonistic networks") +
+  theme_minimal()
+  #+ stat_smooth(method = 'nls', formula = y ~ a*exp(b *x), se = FALSE, start = list(a=1,b=1))
+
+#Generality - Mutualistic networks
+ggplot2::ggplot(final_data_frame_16_MUT, aes(x=gen.1.152., y=y)) + 
+  geom_point()+
+  xlab("Generality") + ylab("Latitude") + ggtitle("Mutualistic networks") +
+  theme_minimal() 
+#+ stat_smooth(method = 'nls', formula = y ~ a*exp(b *x), se = FALSE, start = list(a=1,b=1))
+
+#Generality - Antagonistic networks
+ggplot2::ggplot(final_data_frame_16_FW, aes(x=gen.153.296., y=y)) + 
+  geom_point()+
+  xlab("Generality") + ylab("Latitude") + ggtitle("Antagonistic networks") +
+  theme_minimal()
+#+ stat_smooth(method = 'nls', formula = y ~ a*exp(b *x), se = FALSE, start = list(a=1,b=1))
+
+
+
