@@ -766,31 +766,36 @@ final_data_frame_16_FW <- data.frame(final_data_frame_14_FW, vuln[153:296], gen[
 
 #PLOT
 
+#use latitude as absolute value
+
+final_data_frame_16_MUT$abs_lat <- abs(final_data_frame_16_MUT$y)
+final_data_frame_16_FW$abs_lat <- abs(final_data_frame_16_FW$y)
+
 #Vulnerability - Mutualistic networks
-ggplot2::ggplot(final_data_frame_16_MUT, aes(x=vuln.1.152., y=y)) + 
+ggplot2::ggplot(final_data_frame_16_MUT, aes(x=abs_lat, y=vuln.1.152.)) + 
   geom_point()+
-  xlab("Vulnerability") + ylab("Latitude") + ggtitle("Mutualistic networks") +
+  xlab("Latitude") + ylab("Vulnerability") + ggtitle("Mutualistic networks") +
   theme_minimal() 
   #+ stat_smooth(method = 'nls', formula = y ~ a*exp(b *x), se = FALSE, start = list(a=1,b=1))
 
 #Vulnerability - Antagonistic networks
-ggplot2::ggplot(final_data_frame_16_FW, aes(x=vuln.153.296., y=y)) + 
+ggplot2::ggplot(final_data_frame_16_FW, aes(x=abs_lat, y=vuln.153.296.)) + 
   geom_point()+
-  xlab("Vulnerability") + ylab("Latitude") + ggtitle("Antagonistic networks") +
+  xlab("Latitude") + ylab("Vulnerability") + ggtitle("Antagonistic networks") +
   theme_minimal()
   #+ stat_smooth(method = 'nls', formula = y ~ a*exp(b *x), se = FALSE, start = list(a=1,b=1))
 
 #Generality - Mutualistic networks
-ggplot2::ggplot(final_data_frame_16_MUT, aes(x=gen.1.152., y=y)) + 
+ggplot2::ggplot(final_data_frame_16_MUT, aes(x=abs_lat, y=gen.1.152.)) + 
   geom_point()+
-  xlab("Generality") + ylab("Latitude") + ggtitle("Mutualistic networks") +
+  xlab("Latitude") + ylab("Generality") + ggtitle("Mutualistic networks") +
   theme_minimal() 
 #+ stat_smooth(method = 'nls', formula = y ~ a*exp(b *x), se = FALSE, start = list(a=1,b=1))
 
 #Generality - Antagonistic networks
-ggplot2::ggplot(final_data_frame_16_FW, aes(x=gen.153.296., y=y)) + 
+ggplot2::ggplot(final_data_frame_16_FW, aes(x=abs_lat, y=gen.153.296.)) + 
   geom_point()+
-  xlab("Generality") + ylab("Latitude") + ggtitle("Antagonistic networks") +
+  xlab("Latitude") + ylab("Generality") + ggtitle("Antagonistic networks") +
   theme_minimal()
 #+ stat_smooth(method = 'nls', formula = y ~ a*exp(b *x), se = FALSE, start = list(a=1,b=1))
 
