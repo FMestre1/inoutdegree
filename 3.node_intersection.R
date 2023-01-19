@@ -5,8 +5,6 @@ library(devtools)
 install_github("andrewheiss/reconPlots", force = TRUE)
 library(reconPlots)
 
-
-
 #Evaluate if there is intersection between in- and out-degree and where it is in terms 
 #of node degree
 

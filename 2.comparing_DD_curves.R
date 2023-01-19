@@ -409,7 +409,7 @@ t2 <- all_mangal_objects_selected_igraph[[i]]
 nr_preys <- length(unique(as.numeric(as_edgelist(t2, names = TRUE)[,1])))#preys
 nr_predators <- length(unique(as.numeric(as_edgelist(t2, names = TRUE)[,2])))#predators
 cr_ratio_vector[i] <- nr_predators/nr_preys  
-  
+
 }
 
 #length(cr_ratio_vector)
@@ -631,8 +631,6 @@ rpart.plot(rpart_MUT_3, box.palette="orange3", shadow.col="gray", nn=TRUE)
 rpart.plot(rpart_FW_3, box.palette="yellow3", shadow.col="gray", nn=TRUE)
 
 
-
-
 ###
 #21-11-2022
 
@@ -641,7 +639,6 @@ library(e1071)       #for calculating variable importance
 library(caret)       #for general model fitting
 library(rpart)       #for fitting decision trees
 library(ipred)       #for fitting bagged decision trees
-
 
 
 bag_FW <- bagging(
@@ -696,14 +693,13 @@ barplot(VI_plot_mu$imp,
 
 
 ################################################################################
-#                      GENERALITY & VULNERABILITY VS LATITUDE
+#             GENERALITY & VULNERABILITY VS LATITUDE
 ################################################################################
 #FMestre
 #21-11-2022
 
 length(final_data_frame_14_MUT$network_number)
 length(final_data_frame_14_FW$network_number)
-
 
 retain_id <- c(final_data_frame_14_MUT$network_number, final_data_frame_14_FW$network_number)
 retain_id <- stringr::str_split(retain_id, "#")
@@ -742,7 +738,6 @@ length(all_mangal_objects_selected_igraph_RETAINED)
 length(all_mangal_objects_selected)
 length(retain_id_2)
 
-
 vuln <- c()
 gen <- c()
 
@@ -757,7 +752,6 @@ for(i in 1:length(all_mangal_objects_selected_igraph_RETAINED)){
   gen[i] <-  nr_preys/nr_predators
   
 }
-
 
 final_data_frame_16_MUT <- data.frame(final_data_frame_14_MUT, vuln[1:152], gen[1:152])
 final_data_frame_16_FW <- data.frame(final_data_frame_14_FW, vuln[153:296], gen[153:296])
