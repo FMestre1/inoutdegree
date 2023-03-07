@@ -9,6 +9,8 @@
 #all_mangal_objects_selected_igraph
 #retrieve_codes2
 
+library(ggplot2)
+
 all_species <- c()
 
 for(i in 1:length(all_mangal_objects_selected_igraph)){
@@ -16,8 +18,6 @@ for(i in 1:length(all_mangal_objects_selected_igraph)){
 all_species <- c(all_species, vertex_attr(all_mangal_objects_selected_igraph[[i]])$taxonomy.name)
   
 }
-
-
 
 output_new_plot <- data.frame(NA, NA, NA, NA, NA, NA)
 colnames(output_new_plot) <- c("species", "network", "in", "out", "distance", "CRratio")
@@ -74,3 +74,23 @@ ggplot(output_new_plot_MUT, aes(x=in_deg, y=out_deg, color=CRratio)) +
   labs(y="out-degree", x="in-degree", subtitle="Mutualistic networks - CR Ration") +
   scale_color_gradient(low="yellow", high="blue")
 
+
+
+################################################################################
+#Test the relation between latitude and the alpha parameter for in and out
+################################################################################
+
+#FMestre
+#07-03-2023
+
+
+m1 <- glm(final_data_frame_16_MUT$alpha_in ~ final_data_frame_16_MUT$y)
+m2 <- glm(final_data_frame_16_MUT$alpha_out ~ final_data_frame_16_MUT$y)
+#
+m3 <- glm(final_data_frame_16_FW$alpha_in ~ final_data_frame_16_FW$y)
+m4 <- glm(final_data_frame_16_FW$alpha_out ~ final_data_frame_16_FW$y)
+
+summary(m1)
+summary(m2)
+summary(m3)
+summary(m4)

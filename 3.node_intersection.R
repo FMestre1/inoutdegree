@@ -11,6 +11,11 @@ library(reconPlots)
 #These are the networks
 final_data_frame_16_MUT$network_number
 final_data_frame_16_FW$network_number
+
+nrow(final_data_frame_16_MUT)
+nrow(final_data_frame_16_FW)
+
+
 #length(final_data_frame_16_MUT$network_number) + length(final_data_frame_16_FW$network_number)
 
 #Networks, as igraph and as mangal objects
