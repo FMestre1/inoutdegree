@@ -84,13 +84,17 @@ ggplot(output_new_plot_MUT, aes(x=in_deg, y=out_deg, color=CRratio)) +
 #07-03-2023
 
 
-m1 <- glm(final_data_frame_16_MUT$alpha_in ~ final_data_frame_16_MUT$y)
-m2 <- glm(final_data_frame_16_MUT$alpha_out ~ final_data_frame_16_MUT$y)
+m1 <- glm(final_data_frame_16_MUT$alpha_in ~ abs(final_data_frame_16_MUT$y))
+m2 <- glm(final_data_frame_16_MUT$alpha_out ~ abs(final_data_frame_16_MUT$y))
 #
-m3 <- glm(final_data_frame_16_FW$alpha_in ~ final_data_frame_16_FW$y)
-m4 <- glm(final_data_frame_16_FW$alpha_out ~ final_data_frame_16_FW$y)
+m3 <- glm(final_data_frame_16_FW$alpha_in ~ abs(final_data_frame_16_FW$y))
+m4 <- glm(final_data_frame_16_FW$alpha_out ~ abs(final_data_frame_16_FW$y))
 
 summary(m1)
 summary(m2)
 summary(m3)
 summary(m4)
+
+#Plot
+plot(abs(final_data_frame_16_MUT$y), final_data_frame_16_MUT$alpha_in)
+abline(m1)
