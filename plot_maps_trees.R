@@ -193,7 +193,6 @@ map_rpart_FW_ALL <- map_rpart_FW_1 +
   map_rpart_FW_6 +
   map_rpart_FW_7
   
-
 plot(map_rpart_FW_ALL)
 
 raster::writeRaster(map_rpart_FW_ALL, filename = "map_rpart_FW_ALL.TIF")

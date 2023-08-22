@@ -1,8 +1,6 @@
 #FMestre
 #16-03-2022
 
-#Using rmangal
-
 library(rmangal)
 library(igraph)
 library(sp)
@@ -14,39 +12,15 @@ library(vegan)
 mangal_mutualism <- search_interactions(type = "mutualism", verbose = TRUE)
 mangal_predation <- search_interactions(type = "predation", verbose = TRUE)
 mangal_herbivory <- search_interactions(type = "herbivory", verbose = TRUE)
-#mangal_scavenger <- search_interactions(type = "scavenger", verbose = TRUE)
-#mangal_detritivore <- search_interactions(type = "detritivore", verbose = TRUE)
 
-View(mangal_all)
-
-#Select directed
-#mangal_mutualism_dir <-  mangal_mutualism[mangal_mutualism$direction == "directed",]
-#mangal_predation_dir <- mangal_predation[mangal_predation$direction == "directed",]
-#mangal_herbivory_dir <- mangal_herbivory[mangal_herbivory$direction == "directed",]
-#mangal_scavenger_dir <- mangal_scavenger[mangal_scavenger$direction == "directed",]
-#mangal_detritivore_dir <- mangal_detritivore[mangal_detritivore$direction == "directed",]
-
-#mangal_all <- rbind(mangal_mutualism_dir,
-#                    mangal_predation_dir,
-#                    mangal_herbivory_dir,
-#                    mangal_scavenger_dir,
-#                    mangal_detritivore_dir)
+#View(mangal_all)
 
 mutualistic_networks <- get_collection(mangal_mutualism, as_sf = TRUE, verbose = TRUE)
-#mutualistic_networks <- unique (mutualistic_networks)
 #
 mangal_collection_predation <- get_collection(mangal_predation, as_sf = TRUE, verbose = TRUE)
 mangal_collection_herbivory <- get_collection(mangal_herbivory, as_sf = TRUE, verbose = TRUE)
 antagonistic_networks <- combine_mgNetworks(mangal_collection_predation, mangal_collection_herbivory)
 antagonistic_networks <- unique(antagonistic_networks)
-
-#mangal_collection_scavenger_dir <- get_collection(mangal_scavenger_dir, as_sf = TRUE, verbose = TRUE)
-#mangal_collection_detritivore_dir <- get_collection(mangal_detritivore_dir, as_sf = TRUE, verbose = TRUE)
-
-#mangal_collection <- combine_mgNetworks(mangal_collection_mutualism_dir, mangal_collection_predation_dir, 
-#                                        mangal_collection_herbivory_dir, mangal_collection_scavenger_dir, 
-#                                        mangal_collection_detritivore_dir)
-
 
 #Save
 save(mutualistic_networks, file="mutualistic_networks.RData")
@@ -84,15 +58,6 @@ for(i in 1:length(antagonistic_networks_igraph)){
   message(paste0("Concluded matrix ", i, "!"))
   
 }
-
-#Which don't have only degrees 0 and 1
-#non_excluded_MUT <- as.numeric(lapply(in_degree_list, sum)) > as.numeric(lapply(in_degree_list, length))
-#mangal_collection_igraph_2 <- mangal_collection_igraph[non_excluded]
-#table(non_excluded)
-#length(mangal_collection_igraph_2)
-#save(mangal_collection_igraph_2, file="mangal_collection_igraph_2.RData")
-
-##
 
 in_degree_list_2_MUT <- list()
 out_degree_list_2_MUT <- list()
@@ -166,7 +131,6 @@ for(i in 1:length(antagonistic_networks_igraph)){
 }
 
 #Combine
-
 type_MUT <- rep("mutualistic",length(mutualistic_networks_igraph))
 type_ANT <- rep("antagonistic",length(antagonistic_networks_igraph))
 type <- c(type_MUT, type_ANT)
@@ -189,15 +153,6 @@ fit_data_frame <- data.frame(
   log_lik_in,
   log_lik_out
 )
-
-#View(fit_data_frame)
-#nrow(fit_data_frame)
-
-#Using mangal to get other information
-#length(mangal_collection)
-#length(non_excluded)
-#mangal_collection_2 <- mangal_collection[non_excluded]
-#length(mangal_collection_2)
 
 nnodes_MUT <- c()
 nedges_MUT <- c()
@@ -312,17 +267,11 @@ metrics_and_references <- data.frame(
   data_url
   )
 
-#View(metrics_and_references)
-#nrow(metrics_and_references)
-
 ################################################################################
 #CREATE SPATIAL POINT DATA FRAME
 ################################################################################
 
 ###Extracting spatial information ##############################################
-
-#xy <- data.frame(matrix(ncol = 2))
-#names(xy) <- c("x","y")
 
 xy_MUT <- list()
 xy_ANT <- list()
@@ -355,17 +304,12 @@ for(i in 1:length(antagonistic_networks)){
   
 }
 
-#lapply(xy,class)
-
-#world <- raster::shapefile("C:/Users/FMest/Documents/shape/ne_110m_admin_0_countries.shp")
 world <- raster::shapefile("D:/sig/world_continents.shp")
 
 for(i in 1:length(xy)){
   plot(xy[[i]], col="red", pch = 16, add=TRUE)
   message(paste0("Plot network ", i, "!"))
 }
-
-#length(xy)
 
 xy_2_MUT <- data.frame(matrix(ncol=2))
 names(xy_2_MUT) <- c("x","y")
@@ -425,17 +369,9 @@ dataset_id <- paste0("Dataset #", dataset_id)
 
 #Create final (non-spatial) data frame #########################################
 final_data_frame <- cbind(network_number, dataset_id, metrics_and_references[,c(1:4)], xy_2, fit_data_frame, network_description, metrics_and_references[,c(5:9)])
-#View(final_data_frame)
-#nrow(final_data_frame)
 
 #Remove those without spatial info (to create spatial points data frame)
 final_data_frame <- final_data_frame[!is.na(final_data_frame$x),]
-#nrow(final_data_frame)
-#View(final_data_frame)
-#names(final_data_frame)
-
-#Select the same networks from the mangal collection
-#mangal_collection_3 <- mangal_collection_2[!is.na(xy_2$x)]
 
 #Create spatial point data frame
 final_data_frame_SPATIAL <- SpatialPointsDataFrame(coords = final_data_frame[,7:8], 
@@ -450,7 +386,7 @@ plot(world)
 plot(final_data_frame_SPATIAL, pch=16, col=as.factor(final_data_frame_SPATIAL$type), add=TRUE)
 
 ################################################################################
-# EXTRACT HUMAN DISTURBANCE
+#                          EXTRACT HUMAN DISTURBANCE
 ################################################################################
 
 h_footprint <- raster::raster("D:/sig/wildareas-v3-2009-human-footprint-geotiff/wildareas-v3-2009-human-footprint.tif")
@@ -565,7 +501,7 @@ View(final_data_frame3)
 save(final_data_frame3, file = "final_data_frame3.RData")
 
 ################################################################################
-#Assortativity Index
+#                            Assortativity Index
 ################################################################################
 
 #mutualistic_networks_igraph
@@ -629,7 +565,6 @@ is_directed <- c(unlist(lapply(mutualistic_networks_igraph, is.directed)),
 
 net_id_is_directed_mut <- c()
 net_id_is_directed_ant <- c()
-
 
 for(i in 1:length(mutualistic_networks)){
 
@@ -758,14 +693,11 @@ final_data_frame_7_SPATIAL <- SpatialPointsDataFrame(coords = final_data_frame7[
                                                    data = final_data_frame7, 
                                                    proj4string = world@proj4string)
 
-
-
 plot(world)
 plot(final_data_frame_7_SPATIAL, add = TRUE)
 
-
 ################################################################################
-# UPLOAD VARIABLES
+#                               UPLOAD VARIABLES
 ################################################################################
 
 #STRUDY SIDE

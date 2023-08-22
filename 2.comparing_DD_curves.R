@@ -37,10 +37,6 @@ names(overall_degree_distribution_list) <- code_network
 names(in_degree_distribution_list) <- code_network
 names(out_degree_distribution_list) <- code_network
 
-#as.numeric(lapply(overall_degree_distribution_list, length))
-#as.numeric(lapply(in_degree_distribution_list, length))
-#as.numeric(lapply(out_degree_distribution_list, length))
-
 ##########################################################################################
 # How different are in and out degree distributions?
 ##########################################################################################
@@ -67,11 +63,6 @@ sq_wasserstein_in_out_shape_PERC <- (sq_wasserstein_in_out_shape*100)/sq_wassers
 
 #Sum up to 100?
 sq_wasserstein_in_out_location_PERC + sq_wasserstein_in_out_size_PERC + sq_wasserstein_in_out_shape_PERC
-#Those that don't are all 0
-#sq_wasserstein_in_out_distance[81]
-#sq_wasserstein_in_out_location[81]
-#sq_wasserstein_in_out_size[81]
-#sq_wasserstein_in_out_shape[81]
 
 sq_wasserstein_in_out <- data.frame(code_network, 
                                     sq_wasserstein_in_out_location_PERC,
@@ -129,11 +120,6 @@ sq_wasserstein_out_overall_location_PERC <- (sq_wasserstein_out_overall_location
 sq_wasserstein_out_overall_size_PERC <- (sq_wasserstein_out_overall_size*100)/sq_wasserstein_out_overall_distance
 sq_wasserstein_out_overall_shape_PERC <- (sq_wasserstein_out_overall_shape*100)/sq_wasserstein_out_overall_distance
 #
-
-#Sum up to 100?
-#sq_wasserstein_in_overall_location_PERC + sq_wasserstein_in_overall_size_PERC + sq_wasserstein_in_overall_shape_PERC
-#sq_wasserstein_out_overall_location_PERC + sq_wasserstein_out_overall_size_PERC + sq_wasserstein_out_overall_shape_PERC
-
 
 sq_wasserstein_in_OVERALL <- data.frame(code_network, 
                                             sq_wasserstein_in_overall_location_PERC,
@@ -792,6 +778,4 @@ ggplot2::ggplot(final_data_frame_16_FW, aes(x=abs_lat, y=gen.153.296.)) +
   xlab("Latitude") + ylab("Generality") + ggtitle("Antagonistic networks") +
   theme_minimal()
 #+ stat_smooth(method = 'nls', formula = y ~ a*exp(b *x), se = FALSE, start = list(a=1,b=1))
-
-
 
