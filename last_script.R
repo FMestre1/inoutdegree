@@ -1731,8 +1731,55 @@ ggplot2::ggplot(final_data_frame_16_FW, aes(x=abs_lat, y=gen.153.296.)) +
   theme_minimal()
 #+ stat_smooth(method = 'nls', formula = y ~ a*exp(b *x), se = FALSE, start = list(a=1,b=1))
 
-################################################################################################################################################################
-################################################################################################################################################################
+################################################################################
+#                           Getting the references
+################################################################################
+
+#Getting the references
+#FMestre
+#12-09-2023
+
+library(rmangal)
+
+final_data_frame_16_MUT$network_number
+final_data_frame_16_MUT$dataset_id
+#
+final_data_frame_16_FW$network_number
+final_data_frame_16_FW$dataset_id
+
+length(mutualistic_networks)
+length(antagonistic_networks)
+
+bibtex_refs <- c()
+
+for(i in 1:length(mutualistic_networks)){
+
+  nt11 <- mutualistic_networks[[i]]
+
+  bibtex_refs[i] <- nt11$reference$bibtex 
+  
+}
+
+length(bibtex_refs)
+
+#########################
+
+bibtex_refs2 <- c()
+
+for(i in 1:length(antagonistic_networks)){
+  
+  nt12 <- antagonistic_networks[[i]]
+  
+  bibtex_refs2[i] <- nt12$reference$bibtex 
+  
+}
+
+length(bibtex_refs2)
+
+#########################
 
 
 
+
+  
+  
