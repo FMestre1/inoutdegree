@@ -1826,5 +1826,4 @@ teste2 <- rmangal::get_network_by_id(c(1115, 1567))
 rmangal::get_citation(teste1)
 rmangal::get_citation(teste2)
 
-teste1
-teste2
+rmangal::get_citation(rmangal::get_network_by_id(93))
