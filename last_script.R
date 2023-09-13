@@ -1740,6 +1740,7 @@ ggplot2::ggplot(final_data_frame_16_FW, aes(x=abs_lat, y=gen.153.296.)) +
 #12-09-2023
 
 library(rmangal)
+library(openxlsx)
 
 final_data_frame_16_MUT$network_number
 final_data_frame_16_MUT$dataset_id
@@ -1750,36 +1751,80 @@ final_data_frame_16_FW$dataset_id
 length(mutualistic_networks)
 length(antagonistic_networks)
 
+#########################
+
 bibtex_refs <- c()
+mut_dat_id <- c()
+mut_net_id <- c()
 
 for(i in 1:length(mutualistic_networks)){
 
   nt11 <- mutualistic_networks[[i]]
-
+  
+  mut_dat_id[i] <- nt11$dataset$dataset_id
+  mut_net_id[i] <- nt11$network$network_id
+  
   bibtex_refs[i] <- nt11$reference$bibtex 
   
 }
 
-length(bibtex_refs)
+bibtex_refs <- data.frame(mut_dat_id, mut_net_id, bibtex_refs)
+
+nrow(bibtex_refs)
+View(bibtex_refs)
+write.xlsx(bibtex_refs,'bibtex_refs.csv')
 
 #########################
 
 bibtex_refs2 <- c()
+ant_dat_id <- c()
+ant_net_id <- c()
 
 for(i in 1:length(antagonistic_networks)){
   
   nt12 <- antagonistic_networks[[i]]
   
+  ant_dat_id[i] <- nt12$dataset$dataset_id
+  ant_net_id[i] <- nt12$network$network_id
+  
   bibtex_refs2[i] <- nt12$reference$bibtex 
   
 }
 
-length(bibtex_refs2)
+bibtex_refs2 <- data.frame(ant_dat_id, ant_net_id, bibtex_refs2)
+
+nrow(bibtex_refs2)
+View(bibtex_refs2)
+write.xlsx(bibtex_refs2,'bibtex_refs2.csv')
 
 #########################
 
+#Those that were, in fact, used were:
+net_id <- c(final_data_frame_16_FW$network_number, final_data_frame_16_MUT$network_number)
+dat_id <- c(final_data_frame_16_FW$dataset_id, final_data_frame_16_MUT$dataset_id)
 
+net_id_2 <- c()
+dat_id_2 <- c()
 
-
+for(i in 1:length(net_id)){
   
-  
+net_id_2[i] <- stringr::str_split(net_id[i], " #")[[1]][2]
+dat_id_2[i] <- stringr::str_split(dat_id[i], " #")[[1]][2]
+
+}
+
+unique(net_id_2)
+unique(dat_id_2)
+
+used_nets <- data.frame(dat_id_2,net_id_2)
+write.xlsx(used_nets,'used_nets.csv')
+
+#Check some things in the dataset
+teste1 <- rmangal::get_network_by_id(c(87, 1463))
+teste2 <- rmangal::get_network_by_id(c(1115, 1567))
+
+rmangal::get_citation(teste1)
+rmangal::get_citation(teste2)
+
+teste1
+teste2
