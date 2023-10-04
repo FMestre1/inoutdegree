@@ -2,6 +2,9 @@
 #
 ################################################################################
 
+#FMestre
+#16-03-2022
+
 #loading package
 library(waddR)
 library(igraph)
@@ -23,11 +26,8 @@ library(bbmle)
 library(minpack.lm)
 
 ################################################################################
-#
+#                     OBTAIN AND CLEAN THE DATASETS
 ################################################################################
-
-#FMestre
-#16-03-2022
 
 #"mutualism", "predation", "herbivory", "scavenger", "detritivore"
 
@@ -36,25 +36,28 @@ mangal_predation <- search_interactions(type = "predation", verbose = TRUE)
 mangal_herbivory <- search_interactions(type = "herbivory", verbose = TRUE)
 
 mutualistic_networks <- get_collection(mangal_mutualism, as_sf = TRUE, verbose = TRUE)
-#
+
 mangal_collection_predation <- get_collection(mangal_predation, as_sf = TRUE, verbose = TRUE)
 mangal_collection_herbivory <- get_collection(mangal_herbivory, as_sf = TRUE, verbose = TRUE)
 antagonistic_networks <- combine_mgNetworks(mangal_collection_predation, mangal_collection_herbivory)
 antagonistic_networks <- unique(antagonistic_networks)
 
 #Save
-save(mutualistic_networks, file="mutualistic_networks.RData")
-save(antagonistic_networks, file="antagonistic_networks.RData")
+#save(mutualistic_networks, file="mutualistic_networks.RData")
+#save(antagonistic_networks, file="antagonistic_networks.RData")
 
 #Convert to igraph
 mutualistic_networks_igraph <- as.igraph(mutualistic_networks)
 class(antagonistic_networks) <- class(mutualistic_networks)
 antagonistic_networks_igraph <- as.igraph(antagonistic_networks)
 #
-save(mutualistic_networks_igraph, file="mutualistic_networks_igraph.RData")
-save(antagonistic_networks_igraph, file="antagonistic_networks_igraph.RData")
+#save(mutualistic_networks_igraph, file="mutualistic_networks_igraph.RData")
+#save(antagonistic_networks_igraph, file="antagonistic_networks_igraph.RData")
 
-#Getting the "in" and "out" degree of all networks
+################################################################################
+#                       OBTAINING THE IN- AND OUT-DEGREEE
+################################################################################
+
 in_degree_list_MUT <- list()
 out_degree_list_MUT <- list()
 #
@@ -162,7 +165,7 @@ p_out <- c(p_out_MUT, p_out_ANT)
 log_lik_in <- c(log_lik_in_MUT, log_lik_in_ANT)
 log_lik_out <- c(log_lik_out_MUT, log_lik_out_ANT)
 
-###Data frame with in and out degree distributiin fit ##########################
+###Data frame with in and out degree distribution fit
 
 fit_data_frame <- data.frame(
   type,
@@ -274,7 +277,7 @@ first_author <- c(first_author_MUT, first_author_ANT)
 paper_url <- c(paper_url_MUT, paper_url_ANT)
 data_url <- c(data_url_MUT, data_url_ANT)
 
-###Data frame with metrics and reference to which network ######################
+###Data frame with metrics and reference to which network
 metrics_and_references <- data.frame(
   nnodes,
   nedges,
@@ -288,7 +291,7 @@ metrics_and_references <- data.frame(
 )
 
 ################################################################################
-#                       CREATE SPATIAL POINT DATA FRAME
+#                        CREATE SPATIAL POINT DATA FRAME
 ################################################################################
 
 ###Extracting spatial information ##############################################
@@ -324,6 +327,7 @@ for(i in 1:length(antagonistic_networks)){
   
 }
 
+#Load world shapefile
 world <- raster::shapefile("D:/sig/world_continents.shp")
 
 for(i in 1:length(xy)){
@@ -353,6 +357,7 @@ xy_2 <- rbind(xy_2_MUT, xy_2_ANT)
 nrow(xy_2)
 
 #Adding network number, dataset id and network description from mangal
+
 network_number_MUT <- c()
 network_description_MUT <- c()
 dataset_id_MUT <- c()
@@ -435,14 +440,13 @@ c_ocean_vector <- raster::extract(cumulative_oceans_P, final_data_frame_SPATIAL)
 
 ################################################################################
 
-#Is the network over a continent?    
+#Is the network over a continent? (this is for data cleaning mostly)    
 over_continent <- sp::over(final_data_frame_SPATIAL, world)
 over_continent <- over_continent$scalerank
 over_continent[is.na(over_continent)] <- 0
 
-################################################################################
+
 #The final data frame
-################################################################################
 
 final_data_frame2 <- cbind(final_data_frame
                            ,h_foot_vector, 
@@ -451,8 +455,8 @@ final_data_frame2 <- cbind(final_data_frame
 
 #save(final_data_frame2, file="final_29ABR_2022.RData")
 
-################################################################################
-## Add ecosystem
+
+# Add ecosystem information
 
 final_data_frame3 <- data.frame(final_data_frame2,NA)
 names(final_data_frame3)[25] <- "ecosystem"
@@ -510,16 +514,16 @@ final_data_frame3[(stringr::str_detect(final_data_frame3$network_description, "M
 #final_data_frame3[is.na(final_data_frame3$ecosystem),][1,]
 #final_data_frame3[is.na(final_data_frame3$ecosystem),][1,]$ecosystem <- "terrestrial"
 
-#Qtos faltam?
-sum(is.na(final_data_frame3$ecosystem))
-
-#Ver tabela
+#How many missing?
+#sum(is.na(final_data_frame3$ecosystem))
+#See table
 View(final_data_frame3)
 
-save(final_data_frame3, file = "final_data_frame3.RData")
+#Save
+#save(final_data_frame3, file = "final_data_frame3.RData")
 
 ################################################################################
-#                            Assortativity Index
+#                            ASSORTATIVITY INDEX (unused)
 ################################################################################
 
 #mutualistic_networks_igraph
@@ -572,10 +576,10 @@ View(final_data_frame4)
 nrow(final_data_frame4)
 
 #SAVE
-save(final_data_frame4, file = "final_data_frame4.RData")
+#save(final_data_frame4, file = "final_data_frame4.RData")
 
 ################################################################################
-#                             Select directed graphs
+#                            SELECT DIRECTED GRAPHS
 ################################################################################
 
 is_directed <- c(unlist(lapply(mutualistic_networks_igraph, is.directed)),
@@ -619,10 +623,9 @@ names(final_data_frame6)
 View(final_data_frame6)
 
 ################################################################################
-#                                    HANPP
+#                      HUMAN APROPRIATION OF NPP (HANPP)
 ################################################################################
-#12-05-2022
-#load
+
 hanpp_perc_npp <- raster("C:/fw_space/hapctnpp-geotiff/hapctnpp_geotiff.tif")
 
 final_data_frame6_SPATIAL <- SpatialPointsDataFrame(coords = final_data_frame6[,7:8], data = final_data_frame6)
@@ -636,7 +639,8 @@ hanpp_vector <- extract(hanpp_perc_npp, final_data_frame6_SPATIAL)
 final_data_frame7 <- data.frame(final_data_frame6, hanpp_vector)
 View(final_data_frame7)
 
-save(final_data_frame7, file="final_data_frame7.RData")
+#Save
+#save(final_data_frame7, file="final_data_frame7.RData")
 
 ################################################################################
 
@@ -703,6 +707,7 @@ summary(mod1)
 ###################
 #FMestre
 #26-05-2022
+
 #Create spatial point data frame
 
 final_data_frame_7_SPATIAL <- SpatialPointsDataFrame(coords = final_data_frame7[,7:8], 
@@ -713,7 +718,7 @@ plot(world)
 plot(final_data_frame_7_SPATIAL, add = TRUE)
 
 ################################################################################
-#                               UPLOAD VARIABLES
+#                              UPLOAD VARIABLES
 ################################################################################
 
 #STRUDY SIDE
@@ -977,16 +982,15 @@ names(vars1) <- c(#"copernicus_frag_2009", "copernicus_frag_2012", "copernicus_f
   "max_temp", "min_temp", "average_temp", "precipitation", "solar_radiation",
   "marine_mean_depth_PP", "marine_surface_PP")
 
-View(vars1)
-
+#View(vars1)
 #plot(solar_radiation)
 #plot(final_data_frame_7_SPATIAL, add=TRUE)
 
-
 final_data_frame8 <- data.frame(final_data_frame7, vars1)
-View(final_data_frame8)
+#View(final_data_frame8)
 
-save(final_data_frame8, file = "final_data_frame8.RData")
+#Save
+#save(final_data_frame8, file = "final_data_frame8.RData")
 
 #final_data_frame8[(stringr::str_detect(final_data_frame8$network_description, "xxx", negate = FALSE)),]
 
@@ -997,8 +1001,7 @@ plot(final_data_frame8$alpha_in,
 final_data_frame9 <- final_data_frame8[final_data_frame8$p_in>0.05 & final_data_frame8$p_out>0.05,]
 
 
-library(rgl)
-plot3d(x=final_data_frame9$alpha_in,
+rgl::plot3d(x=final_data_frame9$alpha_in,
        y=final_data_frame9$h_foot_vector, 
        z=final_data_frame9$alpha_out, 
        type = "s", size = 0.75, lit = FALSE)
@@ -1008,7 +1011,9 @@ plot3d(x=final_data_frame9$alpha_in,
 #22-07-2022
 #FMestre
 
-View(final_data_frame9)
+#View(final_data_frame9)
+
+#Save
 #save(final_data_frame9, file = "final_data_frame9.RData")
 
 #FMestre
@@ -1066,6 +1071,11 @@ max_degree_OF_all_mangal_objects_selected_igraph
 all_mangal_objects_selected_igraph
 all_mangal_objects_selected
 
+#identical(all_mangal_objects_selected_igraph, all_mangal_objects_selected)
+
+#length(all_mangal_objects_selected_igraph)
+#length(all_mangal_objects_selected)
+
 overall_degree_distribution_list <- list()
 in_degree_distribution_list <- list()
 out_degree_distribution_list <- list()
@@ -1089,9 +1099,9 @@ names(overall_degree_distribution_list) <- code_network
 names(in_degree_distribution_list) <- code_network
 names(out_degree_distribution_list) <- code_network
 
-##########################################################################################
-# How different are in and out degree distributions?
-##########################################################################################
+################################################################################
+# DIFFERENCES BWTWEEN IN- AND OUT-DEGRESS DISTRIBUTIONS - WASSERSTEIN DISTANCE
+################################################################################
 
 sq_wasserstein_in_out_distance <- c()
 sq_wasserstein_in_out_location <- c()
@@ -1122,8 +1132,7 @@ sq_wasserstein_in_out <- data.frame(code_network,
                                     sq_wasserstein_in_out_shape_PERC
 )
 
-View(sq_wasserstein_in_out)
-
+#View(sq_wasserstein_in_out)
 
 fact1 <- c(rep("location", 310), rep("size", 310), rep("shape", 310))
 in_out_vector <- c(sq_wasserstein_in_out_location_PERC, sq_wasserstein_in_out_size_PERC, sq_wasserstein_in_out_shape_PERC)
@@ -1235,14 +1244,17 @@ final_data_frame_11 <- data.frame(final_data_frame_10,
                                   sq_wasserstein_in_out_OVERALL$sq_wasserstein_in_overall, 
                                   sq_wasserstein_in_out_OVERALL$sq_wasserstein_out_overall
 )
+
 View(final_data_frame_11)
+names(final_data_frame_11)
+nrow(final_data_frame_11)
 
 #Separate per type of network 
 final_data_frame_11_FW <- final_data_frame_11[final_data_frame_11$type=="antagonistic",]
 final_data_frame_11_MUT <- final_data_frame_11[final_data_frame_11$type=="mutualistic",]
 
-#nrow(final_data_frame_11_FW)
-#nrow(final_data_frame_11_MUT)
+nrow(final_data_frame_11_FW)
+nrow(final_data_frame_11_MUT)
 
 #Boxplot
 boxplot(final_data_frame_11$sq_wasserstein_in_out.sq_wasserstein_in_out ~ final_data_frame_11$type)
@@ -1278,6 +1290,10 @@ View(final_data_frame_12)
 #Separate per type of network 
 final_data_frame_12_FW <- final_data_frame_12[final_data_frame_12$type=="antagonistic",]
 final_data_frame_12_MUT <- final_data_frame_12[final_data_frame_12$type=="mutualistic",]
+
+
+nrow(final_data_frame_12_FW)
+nrow(final_data_frame_12_MUT)
 
 #Save tables
 save(final_data_frame_12, file = "final_data_frame_12.RData")
@@ -1315,7 +1331,6 @@ summary(aov1)
 plot(final_data_frame_13_FW$h_foot_vector,final_data_frame_13_FW$sq_wasserstein_in_out_distance)
 plot(final_data_frame_13_MUT$h_foot_vector,final_data_frame_13_MUT$sq_wasserstein_in_out_distance)
 
-
 #generate a html of lme results
 tab_model(mod.lme, digits=2,file = "assortativity_index_mutualism.html")
 
@@ -1333,7 +1348,7 @@ rgdal::writeOGR(obj=final_data_frame_13_SPDF, dsn="tempdir", layer="final_data_f
 #table(final_data_frame_13_SPDF$type)
 
 ################################################################################
-#                                   TREES
+#                             REGRESSION TREES
 ################################################################################
 
 #Create matrix with response variables
@@ -1446,7 +1461,7 @@ rpart.plot::rpart.plot(MUT_tree)
 rpart.plot::rpart.plot(MUT_tree_pruned)
 
 ################################################################################
-# Creating trees with the overall distance only
+#              Creating trees with the overall distance only
 ################################################################################
 #FMestre
 #14-11-2022
@@ -1634,7 +1649,7 @@ barplot(VI_plot_mu$imp,
 
 
 ################################################################################
-#             GENERALITY & VULNERABILITY VS LATITUDE
+#                 GENERALITY & VULNERABILITY VS LATITUDE
 ################################################################################
 #FMestre
 #21-11-2022
@@ -1793,9 +1808,9 @@ for(i in 1:length(antagonistic_networks)){
 
 bibtex_refs2 <- data.frame(ant_dat_id, ant_net_id, bibtex_refs2)
 
-nrow(bibtex_refs2)
-View(bibtex_refs2)
-write.xlsx(bibtex_refs2,'bibtex_refs2.csv')
+#nrow(bibtex_refs2)
+#View(bibtex_refs2)
+#write.xlsx(bibtex_refs2,'bibtex_refs2.csv')
 
 #########################
 
@@ -1817,7 +1832,7 @@ unique(net_id_2)
 unique(dat_id_2)
 
 used_nets <- data.frame(dat_id_2,net_id_2)
-write.xlsx(used_nets,'used_nets.csv')
+#write.xlsx(used_nets,'used_nets.csv')
 
 #Check some things in the dataset
 teste1 <- rmangal::get_network_by_id(c(87, 1463))

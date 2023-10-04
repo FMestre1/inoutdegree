@@ -145,6 +145,7 @@ plot(map_rpart_MUT_4==2, main="4", legend = F)
 ################################################################################
 #                Combine mutualistic and antagonistic maps
 ################################################################################
+
 map_rpart_MUT_1[map_rpart_MUT_1!=1] <- 0
 map_rpart_MUT_2[map_rpart_MUT_2!=3] <- 0
 map_rpart_MUT_3[map_rpart_MUT_3!=3] <- 0
