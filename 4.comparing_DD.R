@@ -7,8 +7,13 @@
 #FMestre
 #09-10-2022
 
-#Acording to our last meeting Miguel is of the opinion that we should compare 
-#both DD wit known distributions
+#Load packages
+library(igraph)
+library(rmangal)
+
+################################################################################
+# 1.Select degree distributions used
+################################################################################
 
 #Degree distributions
 overall_degree_distribution_list
@@ -19,16 +24,99 @@ out_degree_distribution_list
 final_data_frame_16_FW$network_number
 final_data_frame_16_MUT$network_number
 
+fw_ids_used <- c()
+for(i in 1:length(final_data_frame_16_FW$network_number)) fw_ids_used[i] <- as.numeric(stringr::str_split(final_data_frame_16_FW$network_number[i], pattern = "#")[[1]][2])
+
+mut_ids_used <- c()
+for(i in 1:length(final_data_frame_16_MUT$network_number)) mut_ids_used[i] <- as.numeric(stringr::str_split(final_data_frame_16_MUT$network_number[i], pattern = "#")[[1]][2])
+
+ids_used <- c(fw_ids_used, mut_ids_used)
+
+
+overall_degree_distribution_list_RETAINED <- list()
+in_degree_distribution_list_RETAINED <- list()
+out_degree_distribution_list_RETAINED <- list()
+#
+names_networks <- c()
+
+for(i in 1:length(ids_used)){
+  
+id_used_1 <- ids_used[i]
+
+id_ant <- paste0("antagonistic_Network #", id_used_1)
+id_mut <- paste0("mutualistic_Network #", id_used_1)
+
+if (id_ant %in% names(overall_degree_distribution_list)) id_overall <- which(names(overall_degree_distribution_list) == id_ant)
+if (id_mut %in% names(overall_degree_distribution_list)) id_overall <- which(names(overall_degree_distribution_list) == id_mut)
+
+if (id_ant %in% names(in_degree_distribution_list)) id_in <- which(names(in_degree_distribution_list) == id_ant)
+if (id_mut %in% names(in_degree_distribution_list)) id_in <- which(names(in_degree_distribution_list) == id_mut)
+
+if (id_ant %in% names(out_degree_distribution_list)) id_out <- which(names(out_degree_distribution_list) == id_ant)
+if (id_mut %in% names(out_degree_distribution_list)) id_out <- which(names(out_degree_distribution_list) == id_mut)
+
+if (id_overall == id_in && id_overall == id_out){
+  
+  overall_degree_distribution_list_RETAINED[[i]] <- overall_degree_distribution_list[[id_overall]]
+  in_degree_distribution_list_RETAINED[[i]] <- in_degree_distribution_list[[id_overall]]
+  out_degree_distribution_list_RETAINED[[i]] <- out_degree_distribution_list[[id_overall]]
+  
+  names_networks[i] <- paste0("network_", id_used_1)
+  
+} else stop("Different ids!")
+
+message(i)
+
+}
+
+
+names(overall_degree_distribution_list_RETAINED) <- names_networks
+names(in_degree_distribution_list_RETAINED) <- names_networks
+names(out_degree_distribution_list_RETAINED) <- names_networks
+
 
 ################################################################################
-#                          PLOT DEGREE DISTRIBUTIONS
+# 2.Select cheddar objects
 ################################################################################
 
-#Load packages
-library(igraph)
+mangal_objects_selected_10NOV23 <- list()
+names_cheddar <- c()
+
+for(i in 1:length(all_mangal_objects_selected)){
+  
+  if(all_mangal_objects_selected[[i]]$network$network_id %in% ids_used){
+    
+    names_cheddar <- append(names_cheddar, all_mangal_objects_selected[[i]]$network$network_id)
+    mangal_objects_selected_10NOV23 <- append(mangal_objects_selected_10NOV23, all_mangal_objects_selected[i])
+    
+  }
+  
+ message(i)
+  
+}
+
+length(names_cheddar)
+length(mangal_objects_selected_10NOV23)
+
+names_cheddar <- paste0("network_", names_cheddar)
+names(mangal_objects_selected_10NOV23) <- names_cheddar
+
+#Convert to Igraph
+
+mangal_objects_selected_10NOV23_IGRAPH <- list()
+
+for(i in 1:length(mangal_objects_selected_10NOV23)){
+mangal_objects_selected_10NOV23_IGRAPH[[i]] <- as.igraph(mangal_objects_selected_10NOV23[[i]])
+}
+
+names(mangal_objects_selected_10NOV23_IGRAPH) <- names_cheddar
+
+################################################################################
+# 3.Plot degree distributions
+################################################################################
 
 #PLOT
-pdf(file="degree_distributions_1_CUMULATIVE_vers2.pdf",  width=15, height=150)
+pdf(file="degree_distributions_1_CUMULATIVE_vers2.pdf",  width=8, height=150)
 
 #par(mfrow=c(310,4), mar = c(3, 3, 3, 3))
 par(mfrow=c(50,2), mar = c(3, 3, 3, 3))
@@ -36,20 +124,21 @@ par(mfrow=c(50,2), mar = c(3, 3, 3, 3))
 #for(i in 1:length(all_mangal_objects_selected_igraph)){
 for(i in 1:50){
   
-  type_net <- id_table_type[id_table_type$V4 == all_mangal_objects_selected[[i]]$network$network_id,]$final_data_frame9.type
+  plot(overall_degree_distribution_list_RETAINED[[i]], type="l", lwd=2, xlab = "nr. nodes", ylab = "frequency", main = names_networks[i])
+  lines(in_degree_distribution_list_RETAINED[[i]], type="l", col = "red", lwd=2, xlab = "nr. nodes", ylab = "frequency")
+  lines(out_degree_distribution_list_RETAINED[[i]], type="l", col = "blue", lwd=2, xlab = "nr. nodes", ylab = "frequency")
+  #legend("topright", legend=c("Overall", "In-D", "Out-D"), col=c("black", "red", "blue"))
+  #
+  plot(mangal_objects_selected_10NOV23_IGRAPH[[i]], layout=layout_in_circle)
   
-  plot(as.numeric(degree_distribution(all_mangal_objects_selected_igraph[[i]], cumulative = T)), type="l", lwd=2, xlab = "nr. nodes", ylab = "frequency", main = paste0(i," - ", type_net))
-  lines(as.numeric(degree_distribution(all_mangal_objects_selected_igraph[[i]], cumulative = T, mode = "in")), type="l", col = "red", lwd=2, xlab = "nr. nodes", ylab = "frequency")
-  lines(as.numeric(degree_distribution(all_mangal_objects_selected_igraph[[i]], cumulative = T, mode = "out")), type="l", col = "blue", lwd=2, xlab = "nr. nodes", ylab = "frequency")
-  plot(all_mangal_objects_selected_igraph[[i]], layout=layout_in_circle)
-  
-}
+  }
+
 dev.off()
 
-#############
+###################### # ######################
 
 #PLOT
-pdf(file="degree_distributions_2_CUMULATIVE_vers2.pdf",  width=15, height=150)
+pdf(file="degree_distributions_2_CUMULATIVE_vers2.pdf",  width=8, height=150)
 
 #par(mfrow=c(310,4), mar = c(3, 3, 3, 3))
 par(mfrow=c(50,2), mar = c(3, 3, 3, 3))
@@ -57,118 +146,54 @@ par(mfrow=c(50,2), mar = c(3, 3, 3, 3))
 #for(i in 1:length(all_mangal_objects_selected_igraph)){
 for(i in 51:100){
   
-  type_net <- id_table_type[id_table_type$V4 == all_mangal_objects_selected[[i]]$network$network_id,]$final_data_frame9.type
-  
-  plot(as.numeric(degree_distribution(all_mangal_objects_selected_igraph[[i]], cumulative = T)), type="l", lwd=2, xlab = "nr. nodes", ylab = "frequency", main = paste0(i," - ", type_net))
-  lines(as.numeric(degree_distribution(all_mangal_objects_selected_igraph[[i]], cumulative = T, mode = "in")), type="l", col = "red", lwd=2, xlab = "nr. nodes", ylab = "frequency")
-  lines(as.numeric(degree_distribution(all_mangal_objects_selected_igraph[[i]], cumulative = T, mode = "out")), type="l", col = "blue", lwd=2, xlab = "nr. nodes", ylab = "frequency")
-  plot(all_mangal_objects_selected_igraph[[i]], layout=layout_in_circle)
+  plot(overall_degree_distribution_list_RETAINED[[i]], type="l", lwd=2, xlab = "nr. nodes", ylab = "frequency", main = names_networks[i])
+  lines(in_degree_distribution_list_RETAINED[[i]], type="l", col = "red", lwd=2, xlab = "nr. nodes", ylab = "frequency")
+  lines(out_degree_distribution_list_RETAINED[[i]], type="l", col = "blue", lwd=2, xlab = "nr. nodes", ylab = "frequency")
+  #
+  plot(mangal_objects_selected_10NOV23_IGRAPH[[i]], layout=layout_in_circle)
   
 }
+
 dev.off()
 
-#############
+###################### # ######################
 
 #PLOT
-pdf(file="degree_distributions_3_CUMULATIVE_vers2.pdf",  width=15, height=150)
+pdf(file="degree_distributions_3_CUMULATIVE_vers2.pdf",  width=8, height=150)
 
 #par(mfrow=c(310,4), mar = c(3, 3, 3, 3))
 par(mfrow=c(50,2), mar = c(3, 3, 3, 3))
 
 #for(i in 1:length(all_mangal_objects_selected_igraph)){
-for(i in 101:150){
+for(i in 101:250){
   
-  type_net <- id_table_type[id_table_type$V4 == all_mangal_objects_selected[[i]]$network$network_id,]$final_data_frame9.type
-  
-  plot(as.numeric(degree_distribution(all_mangal_objects_selected_igraph[[i]], cumulative = T)), type="l", lwd=2, xlab = "nr. nodes", ylab = "frequency", main = paste0(i," - ", type_net))
-  lines(as.numeric(degree_distribution(all_mangal_objects_selected_igraph[[i]], cumulative = T, mode = "in")), type="l", col = "red", lwd=2, xlab = "nr. nodes", ylab = "frequency")
-  lines(as.numeric(degree_distribution(all_mangal_objects_selected_igraph[[i]], cumulative = T, mode = "out")), type="l", col = "blue", lwd=2, xlab = "nr. nodes", ylab = "frequency")
-  plot(all_mangal_objects_selected_igraph[[i]], layout=layout_in_circle)
+  plot(overall_degree_distribution_list_RETAINED[[i]], type="l", lwd=2, xlab = "nr. nodes", ylab = "frequency", main = names_networks[i])
+  lines(in_degree_distribution_list_RETAINED[[i]], type="l", col = "red", lwd=2, xlab = "nr. nodes", ylab = "frequency")
+  lines(out_degree_distribution_list_RETAINED[[i]], type="l", col = "blue", lwd=2, xlab = "nr. nodes", ylab = "frequency")
+  #
+  plot(mangal_objects_selected_10NOV23_IGRAPH[[i]], layout=layout_in_circle)
   
 }
+
 dev.off()
 
-#############
+###################### # ######################
 
 #PLOT
-pdf(file="degree_distributions_4_CUMULATIVE_vers2.pdf",  width=15, height=150)
+pdf(file="degree_distributions_4_CUMULATIVE_vers2.pdf",  width=8, height=150)
 
 #par(mfrow=c(310,4), mar = c(3, 3, 3, 3))
 par(mfrow=c(50,2), mar = c(3, 3, 3, 3))
 
 #for(i in 1:length(all_mangal_objects_selected_igraph)){
-for(i in 151:200){
+for(i in 251:296){
   
-  type_net <- id_table_type[id_table_type$V4 == all_mangal_objects_selected[[i]]$network$network_id,]$final_data_frame9.type
-  
-  plot(as.numeric(degree_distribution(all_mangal_objects_selected_igraph[[i]], cumulative = T)), type="l", lwd=2, xlab = "nr. nodes", ylab = "frequency", main = paste0(i," - ", type_net))
-  lines(as.numeric(degree_distribution(all_mangal_objects_selected_igraph[[i]], cumulative = T, mode = "in")), type="l", col = "red", lwd=2, xlab = "nr. nodes", ylab = "frequency")
-  lines(as.numeric(degree_distribution(all_mangal_objects_selected_igraph[[i]], cumulative = T, mode = "out")), type="l", col = "blue", lwd=2, xlab = "nr. nodes", ylab = "frequency")
-  plot(all_mangal_objects_selected_igraph[[i]], layout=layout_in_circle)
-  
-}
-dev.off()
-
-#############
-
-#PLOT
-pdf(file="degree_distributions_5_CUMULATIVE_vers2.pdf",  width=15, height=150)
-
-#par(mfrow=c(310,4), mar = c(3, 3, 3, 3))
-par(mfrow=c(50,2), mar = c(3, 3, 3, 3))
-
-#for(i in 1:length(all_mangal_objects_selected_igraph)){
-for(i in 201:250){
-  
-  type_net <- id_table_type[id_table_type$V4 == all_mangal_objects_selected[[i]]$network$network_id,]$final_data_frame9.type
-  
-  plot(as.numeric(degree_distribution(all_mangal_objects_selected_igraph[[i]], cumulative = T)), type="l", lwd=2, xlab = "nr. nodes", ylab = "frequency", main = paste0(i," - ", type_net))
-  lines(as.numeric(degree_distribution(all_mangal_objects_selected_igraph[[i]], cumulative = T, mode = "in")), type="l", col = "red", lwd=2, xlab = "nr. nodes", ylab = "frequency")
-  lines(as.numeric(degree_distribution(all_mangal_objects_selected_igraph[[i]], cumulative = T, mode = "out")), type="l", col = "blue", lwd=2, xlab = "nr. nodes", ylab = "frequency")
-  plot(all_mangal_objects_selected_igraph[[i]], layout=layout_in_circle)
+  plot(overall_degree_distribution_list_RETAINED[[i]], type="l", lwd=2, xlab = "nr. nodes", ylab = "frequency", main = names_networks[i])
+  lines(in_degree_distribution_list_RETAINED[[i]], type="l", col = "red", lwd=2, xlab = "nr. nodes", ylab = "frequency")
+  lines(out_degree_distribution_list_RETAINED[[i]], type="l", col = "blue", lwd=2, xlab = "nr. nodes", ylab = "frequency")
+  #
+  plot(mangal_objects_selected_10NOV23_IGRAPH[[i]], layout=layout_in_circle)
   
 }
+
 dev.off()
-
-#############
-
-#PLOT
-pdf(file="degree_distributions_6_CUMULATIVE_vers2.pdf",  width=15, height=150)
-
-#par(mfrow=c(310,4), mar = c(3, 3, 3, 3))
-par(mfrow=c(50,2), mar = c(3, 3, 3, 3))
-
-#for(i in 1:length(all_mangal_objects_selected_igraph)){
-for(i in 251:300){
-  
-  type_net <- id_table_type[id_table_type$V4 == all_mangal_objects_selected[[i]]$network$network_id,]$final_data_frame9.type
-  
-  plot(as.numeric(degree_distribution(all_mangal_objects_selected_igraph[[i]], cumulative = T)), type="l", lwd=2, xlab = "nr. nodes", ylab = "frequency", main = paste0(i," - ", type_net))
-  lines(as.numeric(degree_distribution(all_mangal_objects_selected_igraph[[i]], cumulative = T, mode = "in")), type="l", col = "red", lwd=2, xlab = "nr. nodes", ylab = "frequency")
-  lines(as.numeric(degree_distribution(all_mangal_objects_selected_igraph[[i]], cumulative = T, mode = "out")), type="l", col = "blue", lwd=2, xlab = "nr. nodes", ylab = "frequency")
-  plot(all_mangal_objects_selected_igraph[[i]], layout=layout_in_circle)
-  
-}
-dev.off()
-
-#############
-
-#PLOT
-pdf(file="degree_distributions_7_CUMULATIVE_vers2.pdf",  width=15, height=150)
-
-#par(mfrow=c(310,4), mar = c(3, 3, 3, 3))
-par(mfrow=c(50,2), mar = c(3, 3, 3, 3))
-
-#for(i in 1:length(all_mangal_objects_selected_igraph)){
-for(i in 301:310){
-  
-  type_net <- id_table_type[id_table_type$V4 == all_mangal_objects_selected[[i]]$network$network_id,]$final_data_frame9.type
-  
-  plot(as.numeric(degree_distribution(all_mangal_objects_selected_igraph[[i]], cumulative = T)), type="l", lwd=2, xlab = "nr. nodes", ylab = "frequency", main = paste0(i," - ", type_net))
-  lines(as.numeric(degree_distribution(all_mangal_objects_selected_igraph[[i]], cumulative = T, mode = "in")), type="l", col = "red", lwd=2, xlab = "nr. nodes", ylab = "frequency")
-  lines(as.numeric(degree_distribution(all_mangal_objects_selected_igraph[[i]], cumulative = T, mode = "out")), type="l", col = "blue", lwd=2, xlab = "nr. nodes", ylab = "frequency")
-  plot(all_mangal_objects_selected_igraph[[i]], layout=layout_in_circle)
-  
-}
-dev.off()
-
