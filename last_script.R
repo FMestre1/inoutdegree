@@ -606,21 +606,21 @@ is_directed2 <- data.frame(net_id_is_directed, is_directed)
 names(is_directed2)
 
 final_data_frame5 <-merge(final_data_frame4, is_directed2, by.x = 'network_number', by.y ='net_id_is_directed')
-View(final_data_frame5)
+#View(final_data_frame5)
 
 final_data_frame6 <- final_data_frame5[final_data_frame5$is_directed == TRUE,]
-View(final_data_frame6)
-nrow(final_data_frame6)
-table(final_data_frame6$type)
+#View(final_data_frame6)
+#nrow(final_data_frame6)
+#table(final_data_frame6$type)
 
-#COrrect for the number of nodes and edges
+#Correct for the number of nodes and edges
 names(final_data_frame6)[3] <- "nedges"
 names(final_data_frame6)[4] <- "nnodes"
 
-save(final_data_frame6, file = "final_data_frame6.RData")
+#save(final_data_frame6, file = "final_data_frame6.RData")
 
 names(final_data_frame6)
-View(final_data_frame6)
+#View(final_data_frame6)
 
 ################################################################################
 #                      HUMAN APROPRIATION OF NPP (HANPP)
@@ -630,14 +630,14 @@ hanpp_perc_npp <- raster("C:/fw_space/hapctnpp-geotiff/hapctnpp_geotiff.tif")
 
 final_data_frame6_SPATIAL <- SpatialPointsDataFrame(coords = final_data_frame6[,7:8], data = final_data_frame6)
 
-plot(hanpp_perc_npp)
-plot(world, add=T)
-plot(final_data_frame6_SPATIAL, add=T)
+#plot(hanpp_perc_npp)
+#plot(world, add=T)
+#plot(final_data_frame6_SPATIAL, add=T)
 
 hanpp_vector <- extract(hanpp_perc_npp, final_data_frame6_SPATIAL)
 
 final_data_frame7 <- data.frame(final_data_frame6, hanpp_vector)
-View(final_data_frame7)
+#View(final_data_frame7)
 
 #Save
 #save(final_data_frame7, file="final_data_frame7.RData")
@@ -997,15 +997,12 @@ final_data_frame8 <- data.frame(final_data_frame7, vars1)
 plot(final_data_frame8$alpha_in,
      final_data_frame8$h_foot_vector)
 
-
 final_data_frame9 <- final_data_frame8[final_data_frame8$p_in>0.05 & final_data_frame8$p_out>0.05,]
-
 
 rgl::plot3d(x=final_data_frame9$alpha_in,
        y=final_data_frame9$h_foot_vector, 
        z=final_data_frame9$alpha_out, 
        type = "s", size = 0.75, lit = FALSE)
-
 
 ##
 #22-07-2022
@@ -1025,13 +1022,11 @@ cor(final_data_frame9$solar_radiation,final_data_frame9$bio1, use="complete.obs"
 table(final_data_frame9$type)
 table(final_data_frame9$ecosystem)
 
-
-names(final_data_frame9)
+#names(final_data_frame9)
 
 final_data_frame9$over_continent
 
 final_data_frame9[final_data_frame9$type=="mutualistic",]
-
 
 final_data_frame9_SPATIAL <- sp::SpatialPointsDataFrame(coords = final_data_frame9[,7:8], data = final_data_frame9)
 
@@ -1100,7 +1095,7 @@ names(in_degree_distribution_list) <- code_network
 names(out_degree_distribution_list) <- code_network
 
 ################################################################################
-# DIFFERENCES BWTWEEN IN- AND OUT-DEGRESS DISTRIBUTIONS - WASSERSTEIN DISTANCE
+#                          DERIVING WASSERSTEIN DISTANCE
 ################################################################################
 
 sq_wasserstein_in_out_distance <- c()
@@ -1121,10 +1116,6 @@ for(i in 1:310) {
 sq_wasserstein_in_out_location_PERC <- (sq_wasserstein_in_out_location*100)/sq_wasserstein_in_out_distance
 sq_wasserstein_in_out_size_PERC <- (sq_wasserstein_in_out_size*100)/sq_wasserstein_in_out_distance
 sq_wasserstein_in_out_shape_PERC <- (sq_wasserstein_in_out_shape*100)/sq_wasserstein_in_out_distance
-
-
-#Sum up to 100?
-sq_wasserstein_in_out_location_PERC + sq_wasserstein_in_out_size_PERC + sq_wasserstein_in_out_shape_PERC
 
 sq_wasserstein_in_out <- data.frame(code_network, 
                                     sq_wasserstein_in_out_location_PERC,
@@ -1192,7 +1183,7 @@ sq_wasserstein_out_OVERALL <- data.frame(code_network,
                                          sq_wasserstein_out_overall_shape_PERC
 )
 
-View(sq_wasserstein_in_out_OVERALL)
+#View(sq_wasserstein_in_out_OVERALL)
 
 #in - overall
 fact1 <- c(rep("location", 310), rep("size", 310), rep("shape", 310))
@@ -1245,16 +1236,16 @@ final_data_frame_11 <- data.frame(final_data_frame_10,
                                   sq_wasserstein_in_out_OVERALL$sq_wasserstein_out_overall
 )
 
-View(final_data_frame_11)
-names(final_data_frame_11)
-nrow(final_data_frame_11)
+#View(final_data_frame_11)
+#names(final_data_frame_11)
+#nrow(final_data_frame_11)
 
 #Separate per type of network 
 final_data_frame_11_FW <- final_data_frame_11[final_data_frame_11$type=="antagonistic",]
 final_data_frame_11_MUT <- final_data_frame_11[final_data_frame_11$type=="mutualistic",]
 
-nrow(final_data_frame_11_FW)
-nrow(final_data_frame_11_MUT)
+#nrow(final_data_frame_11_FW)
+#nrow(final_data_frame_11_MUT)
 
 #Boxplot
 boxplot(final_data_frame_11$sq_wasserstein_in_out.sq_wasserstein_in_out ~ final_data_frame_11$type)
@@ -1263,9 +1254,9 @@ boxplot(final_data_frame_11_FW$sq_wasserstein_in_out.sq_wasserstein_in_out ~ fin
 boxplot(final_data_frame_11_MUT$sq_wasserstein_in_out.sq_wasserstein_in_out ~ final_data_frame_11_MUT$ecosystem)
 
 #Save tables
-save(final_data_frame_11, file = "final_data_frame_11.RData")
-save(final_data_frame_11_FW, file =  "final_data_frame_11_FW.RData")
-save(final_data_frame_11_MUT, file =  "final_data_frame_11_MUT.RData")
+#save(final_data_frame_11, file = "final_data_frame_11.RData")
+#save(final_data_frame_11_FW, file =  "final_data_frame_11_FW.RData")
+#save(final_data_frame_11_MUT, file =  "final_data_frame_11_MUT.RData")
 
 ####################################################################################
 #
@@ -1291,14 +1282,13 @@ View(final_data_frame_12)
 final_data_frame_12_FW <- final_data_frame_12[final_data_frame_12$type=="antagonistic",]
 final_data_frame_12_MUT <- final_data_frame_12[final_data_frame_12$type=="mutualistic",]
 
-
-nrow(final_data_frame_12_FW)
-nrow(final_data_frame_12_MUT)
+#nrow(final_data_frame_12_FW)
+#nrow(final_data_frame_12_MUT)
 
 #Save tables
-save(final_data_frame_12, file = "final_data_frame_12.RData")
-save(final_data_frame_12_FW, file =  "final_data_frame_12_FW.RData")
-save(final_data_frame_12_MUT, file =  "final_data_frame_12_MUT.RData")
+#save(final_data_frame_12, file = "final_data_frame_12.RData")
+#save(final_data_frame_12_FW, file =  "final_data_frame_12_FW.RData")
+#save(final_data_frame_12_MUT, file =  "final_data_frame_12_MUT.RData")
 
 #Explore relationships
 plot(final_data_frame_12_FW$h_foot_vector,final_data_frame_12_FW$sq_wasserstein_in_overall_location_PERC)
@@ -1324,8 +1314,7 @@ final_data_frame_13_MUT <- final_data_frame_13[final_data_frame_13$type=="mutual
 boxplot(final_data_frame_13$sq_wasserstein_in_out_distance~final_data_frame_13$type)
 
 aov1 <- aov(final_data_frame_13$sq_wasserstein_in_out_distance~final_data_frame_13$type)
-
-summary(aov1)
+#summary(aov1)
 
 #Explore relationships
 plot(final_data_frame_13_FW$h_foot_vector,final_data_frame_13_FW$sq_wasserstein_in_out_distance)
