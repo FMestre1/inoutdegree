@@ -1604,8 +1604,19 @@ plot(bio4>10000)
 
 #AQUI
 
-##Recovering multivariate trees with 3 distances
+#final_data_frame_14_MUT_2_PREV <- final_data_frame_14_MUT_2
+#responses_MUT_PREV <- responses_MUT
+#final_data_frame_14_FW_2_PREV <- final_data_frame_14_FW_2
+#responses_FW_PREV <- responses_FW
+#final_data_frame_14_PREV <- final_data_frame_14
 
+#save(final_data_frame_14_MUT_2_PREV, file = "final_data_frame_14_MUT_2_06DEZ23.RData")
+#save(responses_MUT_PREV, file = "responses_MUT_06DEZ23.RData")
+#save(final_data_frame_14_FW_2_PREV, file = "final_data_frame_14_FW_06DEZ23.RData")
+#save(responses_FW_PREV, file = "responses_FW_06DEZ23.RData")
+#save(final_data_frame_14_PREV, file = "final_data_frame_14_PREV_06DEZ23.RData")
+
+##Recovering multivariate trees with 3 distances
 final_data_frame_14_MUT_2 <- final_data_frame_14_MUT[,c("bio1", "bio4", "bio12", "bio15", "solar_radiation", "h_foot_vector", "y")]
 names(final_data_frame_14_MUT_2)[6] <- "human_footprint"
 names(final_data_frame_14_MUT_2)[7] <- "latitude"
