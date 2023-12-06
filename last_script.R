@@ -626,7 +626,7 @@ names(final_data_frame6)
 #                      HUMAN APROPRIATION OF NPP (HANPP)
 ################################################################################
 
-hanpp_perc_npp <- raster("C:/fw_space/hapctnpp-geotiff/hapctnpp_geotiff.tif")
+hanpp_perc_npp <- rast("C:/fw_space/hapctnpp-geotiff/hapctnpp_geotiff.tif")
 
 final_data_frame6_SPATIAL <- SpatialPointsDataFrame(coords = final_data_frame6[,7:8], data = final_data_frame6)
 
@@ -1427,7 +1427,7 @@ MUT_tree <- mvpart(
   #wgt.ave.pca = TRUE  # plot weighted averages across sites for species
 )
 
-names(final_data_frame_14_FW)
+#names(final_data_frame_14_FW)
 
 FW_tree <- mvpart(
   responses_FW ~ y+solar_radiation+h_foot_vector, 
@@ -1448,6 +1448,48 @@ rpart.plot::rpart.plot(FW_tree)
 rpart.plot::rpart.plot(FW_tree_pruned)
 rpart.plot::rpart.plot(MUT_tree)
 rpart.plot::rpart.plot(MUT_tree_pruned)
+
+################################################################################
+#29-11-2023
+
+#AQUI
+
+save(final_data_frame_14_MUT, file = "final_data_frame_14_MUT_04DEZ23.RData")
+save(final_data_frame_14_FW, file = "final_data_frame_14_FW_04DEZ23.RData")
+save(responses_MUT, file = "responses_MUT_04DEZ23.RData")
+save(responses_FW, file = "responses_FW_04DEZ23.RData")
+
+MUT_tree2 <- mvpart(
+  responses_MUT ~ solar_radiation+h_foot_vector+ecosystem, 
+  data = final_data_frame_14_MUT,
+  xv = "min",
+  xval = nrow(responses_MUT), # number of cross-validations
+  xvmult = 100, # number of multiple cross-validations
+  all.leaves = TRUE,  # annotate all nodes
+  rsq = TRUE#,  # give "rsq" plot
+  #pca = TRUE,  # plot PCA of group means and add species and site information
+  #wgt.ave.pca = TRUE  # plot weighted averages across sites for species
+)
+
+#names(final_data_frame_14_FW)
+
+FW_tree2 <- mvpart(
+  responses_FW ~ solar_radiation+h_foot_vector, 
+  data = final_data_frame_14_FW,
+  xv = "min",
+  xval = nrow(responses_FW), # number of cross-validations
+  xvmult = 100, # number of multiple cross-validations
+  all.leaves = TRUE,  # annotate all nodes
+  rsq = TRUE#,  # give "rsq" plot
+  #pca = TRUE,  # plot PCA of group means and add species and site information
+  #wgt.ave.pca = TRUE  # plot weighted averages across sites for species
+)
+
+#MUT_tree_pruned <- prune(MUT_tree, cp=0.1)
+#FW_tree_pruned <- prune(FW_tree, cp=0.1)
+#
+rpart.plot::rpart.plot(FW_tree)
+rpart.plot::rpart.plot(MUT_tree)
 
 ################################################################################
 #              Creating trees with the overall distance only
@@ -1486,8 +1528,7 @@ View(final_data_frame_15)
 final_data_frame_15_FW <- final_data_frame_15[final_data_frame_15$type=="antagonistic",]
 final_data_frame_15_MUT <- final_data_frame_15[final_data_frame_15$type=="mutualistic",]
 
-
-names(final_data_frame_15_FW)
+#names(final_data_frame_15_FW)
 
 #plot(final_data_frame_15_MUT$cr_ratio_vector, final_data_frame_15_MUT$sq_wasserstein_in_out_location_PERC)
 
@@ -1539,6 +1580,29 @@ rpart_MUT_3 <- rpart::rpart(distance ~ bio1+bio4+bio12+bio15+solar_radiation+hum
 #MUT_tree_pruned_3 <- prune(rpart_MUT_3, cp=0.1)
 #rpart.plot::rpart.plot(MUT_tree_pruned_3)
 rpart.plot::rpart.plot(rpart_MUT_3)
+
+####
+#Sem latitude
+#04-12-2023
+
+rpart_FW_4 <- rpart::rpart(distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint, 
+                           data = final_data_frame_15_FW_2)
+#FW_tree_pruned_3 <- prune(rpart_FW_3, cp=0.1)
+#rpart.plot::rpart.plot(FW_tree_pruned_3)
+rpart.plot::rpart.plot(rpart_FW_4)
+
+#
+rpart_MUT_4 <- rpart::rpart(distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint, 
+                            data = final_data_frame_15_MUT_2)
+#MUT_tree_pruned_3 <- prune(rpart_MUT_3, cp=0.1)
+#rpart.plot::rpart.plot(MUT_tree_pruned_3)
+rpart.plot::rpart.plot(rpart_MUT_4)
+
+
+plot(bio4>2603)
+plot(bio4>10000)
+
+#AQUI
 
 ##Recovering multivariate trees with 3 distances
 
