@@ -1,12 +1,13 @@
 ################################################################################
-#
+# Run the Regression Trees
 ################################################################################
+#12-12-2023
 
 names(final_data_frame_8_SPATIAL)
 
 #Delete some columns
 final_data_frame_9 <- final_data_frame_8_SPATIAL[,-c(14,15,16,17,18,39,41)]
-table(final_data_frame_9$type)
+#table(final_data_frame_9$type)
 
 #Separate MUT and ANT
 final_data_frame_9_ANT <- final_data_frame_9[final_data_frame_9$type == "antagonistic",]
@@ -14,7 +15,6 @@ final_data_frame_9_ANT <- final_data_frame_9[final_data_frame_9$type == "antagon
 
 final_data_frame_9_MUT <- final_data_frame_9[final_data_frame_9$type == "mutualistic",]
 #nrow(final_data_frame_9_MUT)
-
 #nrow(final_data_frame_9_ANT) + nrow(final_data_frame_9_MUT)
 
 ################################################################################
@@ -77,7 +77,6 @@ FW_tree <- mvpart::mvpart(
   #wgt.ave.pca = TRUE  # plot weighted averages across sites for species
 )
 
-
 #Summary
 summary(MUT_tree)
 summary(FW_tree)
@@ -131,19 +130,9 @@ fancyRpartPlot(rpart_FW)
 
 ptree_rpart_FW <- prune(rpart_FW,
               cp = rpart_FW$cptable[which.min(rpart_FW$cptable[,"xerror"]),"CP"])
-              fancyRpartPlot(rpart_FW, uniform=TRUE,
-              main="Pruned Classification Tree")
 
 ptree_rpart_MUT <- prune(rpart_MUT,
               cp = rpart_MUT$cptable[which.min(rpart_MUT$cptable[,"xerror"]),"CP"])
-              fancyRpartPlot(rpart_MUT, uniform=TRUE,
-              main="Pruned Classification Tree")
-              
-#Plot
-#rpart.plot(ptree_rpart_MUT, box.palette="yellow3", shadow.col="gray", nn=TRUE, cex=0.6)
-#rpart.plot(ptree_rpart_FW, box.palette="orange3", shadow.col="gray", nn=TRUE, cex=0.6)
-fancyRpartPlot(ptree_rpart_MUT)
-fancyRpartPlot(ptree_rpart_FW)
 
 #Statistics
 #Univariate - MUT
@@ -168,6 +157,16 @@ rsq.val_ANT_pruned <- 1-printcp_ANT_pruned[,c(3,4)]
 rsq.val_ANT_pruned[nrow(rsq.val_ANT_pruned),]
 round(as.numeric(rsq.val_ANT_pruned[nrow(rsq.val_ANT_pruned),][1]),3)
 
+#Plot
+fancyRpartPlot(ptree_rpart_MUT)
+fancyRpartPlot(ptree_rpart_FW)
+
+#Load multivariate trees
+#load("FW_tree.RData")
+#load("MUT_tree.RData")
+#fancyRpartPlot(FW_tree)
+#fancyRpartPlot(MUT_tree)
+
 #Load - Save
-#save.image(file = "new_inout_06DEZ23.RData")
-#load("C:/Users/asus/Desktop/new_inout_06DEZ23.RData")
+#save.image(file = "inout_12DEZ23.RData")
+#load("inout_12DEZ23.RData")

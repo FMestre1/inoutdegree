@@ -8,6 +8,7 @@
 #FMestre
 #04-12-2023
 
+#Load packages
 library(waddR)
 library(rpart)
 library(rmangal)
@@ -26,6 +27,10 @@ library(rattle)
 mangal_mutualism <- search_interactions(type = "mutualism", verbose = TRUE)
 mangal_predation <- search_interactions(type = "predation", verbose = TRUE)
 mangal_herbivory <- search_interactions(type = "herbivory", verbose = TRUE)
+
+mangal_mutualism <- unique(mangal_mutualism)
+mangal_predation <- unique(mangal_predation)
+mangal_herbivory <- unique(mangal_herbivory)
 
 mutualistic_networks <- get_collection(mangal_mutualism, as_sf = TRUE, verbose = TRUE)
 
@@ -104,10 +109,10 @@ for(i in 1:length(antagonistic_networks_igraph)){
   message(paste0("Concluded matrix ", i, "!"))
   
 }
-
+#
 network_number_list_MUT <- c()
 network_number_list_ANT <- c()
-
+#
 for(i in 1:length(mutualistic_networks)) network_number_list_MUT[i] <- paste0("Network #", mutualistic_networks[[i]]$network$network_id)
 for(i in 1:length(antagonistic_networks)) network_number_list_ANT[i] <- paste0("Network #", antagonistic_networks[[i]]$network$network_id)
   
@@ -454,8 +459,6 @@ net_id_is_directed <- c(net_id_is_directed_mut, net_id_is_directed_ant)
 
 table(final_data_frame_4$network_number %in% net_id_is_directed)
 
-#all are!
-
 ################################################################################
 #Select by year - above 1980
 ################################################################################
@@ -475,7 +478,6 @@ final_data_frame_6 <- final_data_frame_5[!is.na(final_data_frame_5$x),]
 #Create Spatial Points Data Frame
 final_data_frame_6_SPATIAL <- vect(final_data_frame_6, geom=c("x", "y"), 
                                    crs=crs(world), keepgeom=FALSE)
-
 
 
 plot(world)
