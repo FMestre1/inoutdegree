@@ -2,39 +2,69 @@
 # Run the Regression Trees
 ################################################################################
 #12-12-2023
-
-names(final_data_frame_8_SPATIAL)
+#names(final_data_frame_8_SPATIAL)
 
 #Delete some columns
-final_data_frame_9 <- final_data_frame_8_SPATIAL[,-c(14,15,16,17,18,39,41)]
+#final_data_frame_9 <- final_data_frame_8_SPATIAL[,-c(14,15,16,17,18,39,41)]
 #table(final_data_frame_9$type)
 
 #Separate MUT and ANT
-final_data_frame_9_ANT <- final_data_frame_9[final_data_frame_9$type == "antagonistic",]
+final_data_frame_9_ANT <- final_data_frame_8_SPATIAL[final_data_frame_8_SPATIAL$type == "antagonistic",]
 #nrow(final_data_frame_9_ANT)
 
-final_data_frame_9_MUT <- final_data_frame_9[final_data_frame_9$type == "mutualistic",]
+final_data_frame_9_MUT <- final_data_frame_8_SPATIAL[final_data_frame_8_SPATIAL$type == "mutualistic",]
 #nrow(final_data_frame_9_MUT)
-#nrow(final_data_frame_9_ANT) + nrow(final_data_frame_9_MUT)
 
 ################################################################################
 # Multivariate Regression Tree
 ################################################################################
-
 #Send files to R version 3.2.0 to run mvpart
-write.csv(responses_MUT, file = "responses_MUT_06DEZ23.csv")
-write.csv(final_data_frame_9_MUT_3, file = "final_data_frame_9_MUT_3_06DEZ23.csv")
-write.csv(responses_ANT, file = "responses_ANT_06DEZ23.csv")
-write.csv(final_data_frame_9_ANT_3, file = "final_data_frame_9_ANT_3_06DEZ23.csv")
+
+#Create matrix with response variables
+responses_MUT <- data.frame(final_data_frame_9_MUT$sq_wasserstein_in_out_location_PERC, 
+                       final_data_frame_9_MUT$sq_wasserstein_in_out_size_PERC, 
+                       final_data_frame_9_MUT$sq_wasserstein_in_out_shape_PERC
+                       )
+
+#responses_MUT[is.na(responses_MUT)] <- 0
+#
+#Create matrix with response variables
+responses_ANT <- data.frame(final_data_frame_9_ANT$sq_wasserstein_in_out_location_PERC, 
+                       final_data_frame_9_ANT$sq_wasserstein_in_out_size_PERC, 
+                       final_data_frame_9_ANT$sq_wasserstein_in_out_shape_PERC
+                       )
+#responses_ANT[is.na(responses_ANT)] <- 0 
+
+names(responses_MUT) <- c("location", "size", "shape")
+names(responses_ANT) <- c("location", "size", "shape")
+
+final_data_frame_9_MUT <- as.data.frame(final_data_frame_9_MUT)
+final_data_frame_9_ANT <- as.data.frame(final_data_frame_9_ANT)
+
+names(final_data_frame_9_MUT)[38] <- "distance"
+names(final_data_frame_9_MUT)[34] <- "solar_radiation"
+names(final_data_frame_9_MUT)[36] <- "human_footprint"
+#
+names(final_data_frame_9_ANT)[38] <- "distance"
+names(final_data_frame_9_ANT)[34] <- "solar_radiation"
+names(final_data_frame_9_ANT)[36] <- "human_footprint"
+
+write.csv(responses_MUT, file = "responses_MUT_14DEZ23.csv")
+write.csv(final_data_frame_9_MUT, file = "final_data_frame_9_MUT_3_14DEZ23.csv")
+write.csv(responses_ANT, file = "responses_ANT_14DEZ23.csv")
+write.csv(final_data_frame_9_ANT, file = "final_data_frame_9_ANT_3_14DEZ23.csv")
 
 #R code run in the version 3.2.0 - START
 
+#Clean the environment
+#rm(list = ls())
+
 library(mvpart)
 
-responses_MUT <- read.csv("C:\\Users\\asus\\Documents\\responses_MUT_06DEZ23.csv")
-final_data_frame_9_MUT <- read.csv("C:\\Users\\asus\\Documents\\final_data_frame_9_MUT_3_06DEZ23.csv")
-responses_ANT <- read.csv("C:\\Users\\asus\\Documents\\responses_ANT_06DEZ23.csv")
-final_data_frame_9_ANT <- read.csv("C:\\Users\\asus\\Documents\\final_data_frame_9_ANT_3_06DEZ23.csv")
+responses_MUT <- read.csv("C:\\Users\\asus\\Documents\\github\\inoutdegree\\responses_MUT_14DEZ23.csv")
+final_data_frame_9_MUT <- read.csv("C:\\Users\\asus\\Documents\\github\\inoutdegree\\final_data_frame_9_MUT_3_14DEZ23.csv")
+responses_ANT <- read.csv("C:\\Users\\asus\\Documents\\github\\inoutdegree\\responses_ANT_14DEZ23.csv")
+final_data_frame_9_ANT <- read.csv("C:\\Users\\asus\\Documents\\github\\inoutdegree\\final_data_frame_9_ANT_3_14DEZ23.csv")
 
 responses_MUT <- as.matrix(responses_MUT)
 responses_ANT <- as.matrix(responses_ANT)
@@ -100,15 +130,9 @@ round(as.numeric(rsq.val_MUT_MULT[nrow(rsq.val_MUT_MULT),][1]),3)
 # Univariate Regression Tree
 ################################################################################
 
-final_data_frame_10_ANT <- data.frame(final_data_frame_9_ANT[,c("sq_wasserstein_in_out_distance", "bio1", "bio4", "bio12", "bio15", "wc2.1_10m_srad_01", "wildareas.v3.2009.human.footprint")])
-names(final_data_frame_10_ANT)[1] <- "distance"
-names(final_data_frame_10_ANT)[6] <- "solar_radiation"
-names(final_data_frame_10_ANT)[7] <- "human_footprint"
+final_data_frame_10_ANT <- data.frame(final_data_frame_9_ANT[,c("distance", "bio1", "bio4", "bio12", "bio15", "solar_radiation", "human_footprint")])
 #
-final_data_frame_10_MUT <- data.frame(final_data_frame_9_MUT[,c("sq_wasserstein_in_out_distance", "bio1", "bio4", "bio12", "bio15", "wc2.1_10m_srad_01", "wildareas.v3.2009.human.footprint")])
-names(final_data_frame_10_MUT)[1] <- "distance"
-names(final_data_frame_10_MUT)[6] <- "solar_radiation"
-names(final_data_frame_10_MUT)[7] <- "human_footprint"
+final_data_frame_10_MUT <- data.frame(final_data_frame_9_MUT[,c("distance", "bio1", "bio4", "bio12", "bio15", "solar_radiation", "human_footprint")])
 #
 rpart_FW <- rpart::rpart(distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint, 
                            data = final_data_frame_10_ANT)
@@ -122,8 +146,8 @@ nrow(final_data_frame_10_ANT)
 nrow(final_data_frame_10_MUT)
 
 #Plot
-fancyRpartPlot(rpart_MUT)
-fancyRpartPlot(rpart_FW)
+fancyRpartPlot(rpart_MUT, cex = 0.5)
+fancyRpartPlot(rpart_FW, cex = 0.5)
 
 #Code from:
 #https://www.edureka.co/blog/implementation-of-decision-tree/
@@ -166,7 +190,3 @@ fancyRpartPlot(ptree_rpart_FW)
 #load("MUT_tree.RData")
 #fancyRpartPlot(FW_tree)
 #fancyRpartPlot(MUT_tree)
-
-#Load - Save
-#save.image(file = "inout_12DEZ23.RData")
-#load("inout_12DEZ23.RData")

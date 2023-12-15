@@ -182,7 +182,6 @@ xy_2 <- rbind(xy_2_MUT, xy_2_ANT)
 #nrow(xy_2)
 
 #Adding network number, dataset id and network description from mangal
-
 network_number_MUT <- c()
 network_description_MUT <- c()
 dataset_id_MUT <- c()
@@ -215,7 +214,6 @@ network_number <- paste0("Network #", network_number)
 dataset_id <- paste0("Dataset #", dataset_id)
 
 #Metrics and references
-
 nnodes_MUT <- c()
 nedges_MUT <- c()
 connectance_MUT <- c()
@@ -335,20 +333,55 @@ metrics_and_references <- data.frame(
   data_url
 )
 
+rm(
+  type,
+  nnodes,
+  nedges,
+  connectance,
+  linkage_density,
+  doi,
+  year,
+  first_author,
+  paper_url,
+  data_url,
+  type_ANT,
+  nnodes_ANT,
+  nedges_ANT,
+  connectance_ANT,
+  linkage_density_ANT,
+  doi_ANT,
+  year_ANT,
+  first_author_ANT,
+  paper_url_ANT,
+  data_url_ANT,
+  type_MUT,
+  nnodes_MUT,
+  nedges_MUT,
+  connectance_MUT,
+  linkage_density_MUT,
+  doi_MUT,
+  year_MUT,
+  first_author_MUT,
+  paper_url_MUT,
+  data_url_MUT
+)
+
 #View(metrics_and_references)
 
 #Create final (non-spatial) data frame #########################################
-final_data_frame <- cbind(network_number, dataset_id, metrics_and_references, xy_2, network_description, metrics_and_references[,c(5:9)])
+final_data_frame <- cbind(network_number, dataset_id, metrics_and_references[,c(1:5)], xy_2, network_description, metrics_and_references[,c(6:9)])
 
 #Remove networks without coordinates
 final_data_frame <- final_data_frame[!is.na(final_data_frame$x),]
+#names(final_data_frame)
+#View(final_data_frame)
 
 ################################################################################
 # Add Ecosystem Information
 ################################################################################
 
-final_data_frame_2 <- data.frame(final_data_frame,NA)
-names(final_data_frame_2)[21] <- "ecosystem"
+final_data_frame_2 <- cbind(final_data_frame,NA)
+names(final_data_frame_2)[15] <- "ecosystem"
 
 final_data_frame_2[stringr::str_detect(final_data_frame_2$network_description, "ocean", negate = FALSE),]$ecosystem <- "marine"
 final_data_frame_2[stringr::str_detect(final_data_frame_2$network_description, "Ocean", negate = FALSE),]$ecosystem <- "marine"
@@ -418,11 +451,14 @@ final_data_frame_2[(stringr::str_detect(final_data_frame_2$network_description, 
 final_data_frame_2[(stringr::str_detect(final_data_frame_2$network_description, "The food web structure of N. madagascarensis in Madagascar", negate = FALSE)),]$ecosystem <- "freshwater"
 final_data_frame_2[(stringr::str_detect(final_data_frame_2$network_description, "Himalayas", negate = FALSE)),]$ecosystem <- "terrestrial"
 final_data_frame_2[(stringr::str_detect(final_data_frame_2$network_description, "Aspen Parkland", negate = FALSE)),]$ecosystem <- "terrestrial"
+final_data_frame_2[(stringr::str_detect(final_data_frame_2$network_description, "Food web of the oligohaline systeme", negate = FALSE)),]$ecosystem <- "coastal"
 
 #Search one by one
 sum(is.na(final_data_frame_2$ecosystem)) #How many missing?
 #final_data_frame_2[is.na(final_data_frame_2$ecosystem),]$network_description
 #final_data_frame_2[is.na(final_data_frame_2$ecosystem),]$doi
+#View(final_data_frame_2)
+names(final_data_frame_2)
 
 final_data_frame_3 <- final_data_frame_2[!is.na(final_data_frame_2$ecosystem),]
 #final_data_frame_3[is.na(final_data_frame_3$ecosystem),]$doi
@@ -432,6 +468,8 @@ final_data_frame_3 <- final_data_frame_2[!is.na(final_data_frame_2$ecosystem),]
 ################################################################################
 
 final_data_frame_4 <- final_data_frame_3[!final_data_frame_3$ecosystem == "marine",]
+#names(final_data_frame_4)
+#View(final_data_frame_4)
 
 ################################################################################
 # Remove non-directed graphs
@@ -448,7 +486,7 @@ for(i in 1:length(mutualistic_networks)){
   net_id_is_directed_mut[i] <- paste0("Network #", mutualistic_networks[[i]]$network$network_id)
   
 }
-
+#
 for(i in 1:length(antagonistic_networks)){
   
   net_id_is_directed_ant[i] <- paste0("Network #", antagonistic_networks[[i]]$network$network_id)
@@ -465,6 +503,7 @@ table(final_data_frame_4$network_number %in% net_id_is_directed)
 
 final_data_frame_5 <- final_data_frame_4[(final_data_frame_4$year > 1980),]
 #View(final_data_frame_5)
+#nrow(final_data_frame_5)
 
 ################################################################################
 # Create geographic data frame
@@ -476,11 +515,10 @@ world <- terra::vect("D:/sig/world_continents.shp")
 final_data_frame_6 <- final_data_frame_5[!is.na(final_data_frame_5$x),]
 
 #Create Spatial Points Data Frame
-final_data_frame_6_SPATIAL <- vect(final_data_frame_6, geom=c("x", "y"), 
-                                   crs=crs(world), keepgeom=FALSE)
+final_data_frame_6_SPATIAL <- vect(final_data_frame_6, geom = c("x", "y"), 
+                                   crs = crs(world), keepgeom = FALSE)
 
 
 plot(world)
 plot(final_data_frame_6_SPATIAL, add=TRUE)
 #nrow(final_data_frame_6_SPATIAL)
-

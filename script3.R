@@ -43,3 +43,25 @@ final_data_frame_8_SPATIAL <- vect(final_data_frame_8, geom=c("x", "y"),
 #Plot
 plot(world)
 plot(final_data_frame_8_SPATIAL, add=TRUE)
+
+################################################################################
+# Select exclusively those with a distance greater than zero
+################################################################################
+
+#Which are which?
+no_na_df <- final_data_frame_8[final_data_frame_8$sq_wasserstein_in_out_distance != 0,]
+yes_na_df <- final_data_frame_8[final_data_frame_8$sq_wasserstein_in_out_distance == 0,]
+
+networks_with_distance_non_zero <- no_na_df$network_number
+length(networks_with_distance_non_zero)
+
+final_data_frame_8_SPATIAL <- final_data_frame_8_SPATIAL[final_data_frame_8_SPATIAL$network_number %in% networks_with_distance_non_zero,]
+
+
+
+
+
+
+
+
+

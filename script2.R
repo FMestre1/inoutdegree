@@ -153,11 +153,10 @@ names(merraclim_bioclimatic) <- c("bio1", "bio2", "bio3", "bio4", "bio5", "bio6"
                                   "bio8", "bio9", "bio10", "bio11", "bio12", "bio13", "bio14", 
                                   "bio15", "bio16", "bio17", "bio18", "bio19")
 
-solar_radiation
 
 #EXTRACT
 #Extract MerraClim bioclimatic variables
-merraclim_bioclimatic_extracted <- data.frame(matrix(nrow = 328))
+merraclim_bioclimatic_extracted <- data.frame(matrix(nrow = length(final_data_frame_6_SPATIAL)))
 
 for(i in 1:length(merraclim_bioclimatic)){
 merraclim_bioclimatic_col <- terra::extract(merraclim_bioclimatic[[i]], final_data_frame_6_SPATIAL)
@@ -166,6 +165,7 @@ merraclim_bioclimatic_extracted <- cbind(merraclim_bioclimatic_extracted, merrac
 
 merraclim_bioclimatic_extracted <- merraclim_bioclimatic_extracted[,-1]
 colnames(merraclim_bioclimatic_extracted) <- names(merraclim_bioclimatic) 
+#View(merraclim_bioclimatic_extracted)
 
 #Extract solar radiation
 solar_radiation_extract <- terra::extract(solar_radiation, final_data_frame_6_SPATIAL)
@@ -181,5 +181,3 @@ final_data_frame_7 <- data.frame(final_data_frame_6_SPATIAL,
 
 final_data_frame_7_SPATIAL <- vect(final_data_frame_7, geom=c("x", "y"), 
                                    crs=crs(world), keepgeom=FALSE)
-
-
