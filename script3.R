@@ -57,9 +57,10 @@ length(networks_with_distance_non_zero)
 
 final_data_frame_8_SPATIAL <- final_data_frame_8_SPATIAL[final_data_frame_8_SPATIAL$network_number %in% networks_with_distance_non_zero,]
 
+nrow(final_data_frame_8_SPATIAL)
 
-
-
+#SAve shapefile to fig.1
+terra::writeVector(final_data_frame_8_SPATIAL, "final_data_frame_8_SPATIAL.shp")
 
 
 

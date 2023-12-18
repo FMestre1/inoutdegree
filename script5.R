@@ -150,3 +150,30 @@ plotTukeysHSD(MUT.Tukey)
 #Load - Save
 #save.image(file = "inout_15DEZ23.RData")
 #load("inout_15DEZ23.RData")
+
+################################################################################
+# Violin plots
+################################################################################
+#18-12-2023
+
+names(final_data_frame_9_ANT_3)
+names(final_data_frame_9_MUT_3)
+
+ant_viol <- ggplot(final_data_frame_9_ANT_3, aes(x=factor, y=metric, fill=factor)) +
+  geom_violin(scale = "count", trim = F, adjust = 0.75) +
+  geom_point() +
+  ggtitle("Antagonistic Networks (n=128)") +
+  xlab("Wasserstein distance components") + 
+  ylab("")
+
+mut_viol <- ggplot(final_data_frame_9_MUT_3, aes(x=factor, y=metric, fill=factor)) +
+  geom_violin(scale = "count", trim = F, adjust = 0.75) +
+  geom_point() +
+  ggtitle("Mutualistic Networks (n=93)") +
+  xlab("Wasserstein distance components") + 
+  ylab("")
+
+ggarrange(ant_viol, mut_viol, 
+          labels = c("A", "B"),
+          ncol = 2, nrow = 1)
+

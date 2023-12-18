@@ -168,7 +168,12 @@ rsq.rpart(ptree_rpart_MUT)
 printcp_MUT_pruned <- printcp(ptree_rpart_MUT)
 rsq.val_MUT_pruned <- 1-printcp_MUT_pruned[,c(3,4)] 
 rsq.val_MUT_pruned[nrow(rsq.val_MUT_pruned),]
-round(as.numeric(rsq.val_MUT_pruned[nrow(rsq.val_MUT_pruned),][1]),3)
+round(as.numeric(rsq.val_MUT_pruned[nrow(rsq.val_MUT_pruned),][1]),3)*100
+#
+#printcp_MUT <- printcp(rpart_MUT)
+#rsq.val_MUT <- 1-printcp_MUT[,c(3,4)] 
+#rsq.val_MUT[nrow(rsq.val_MUT),]
+#round(as.numeric(rsq.val_MUT[nrow(rsq.val_MUT),][1]),3)*100
 
 #Univariate - ANT
 plotcp(ptree_rpart_FW)
@@ -179,7 +184,7 @@ rsq.rpart(ptree_rpart_FW)
 printcp_ANT_pruned <- printcp(ptree_rpart_FW)
 rsq.val_ANT_pruned <- 1-printcp_ANT_pruned[,c(3,4)] 
 rsq.val_ANT_pruned[nrow(rsq.val_ANT_pruned),]
-round(as.numeric(rsq.val_ANT_pruned[nrow(rsq.val_ANT_pruned),][1]),3)
+round(as.numeric(rsq.val_ANT_pruned[nrow(rsq.val_ANT_pruned),][1]),3)*100
 
 #Plot
 fancyRpartPlot(ptree_rpart_MUT)

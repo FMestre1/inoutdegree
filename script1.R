@@ -19,6 +19,9 @@ library(sp)
 library(waddR)
 library(rpart.plot)
 library(rattle)
+library(ggplot2)
+library(viridis)
+library(ggpubr)
 
 ################################################################################
 # 1. Network data importing
