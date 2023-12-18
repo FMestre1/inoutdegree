@@ -184,9 +184,3 @@ round(as.numeric(rsq.val_ANT_pruned[nrow(rsq.val_ANT_pruned),][1]),3)
 #Plot
 fancyRpartPlot(ptree_rpart_MUT)
 fancyRpartPlot(ptree_rpart_FW)
-
-#Load multivariate trees
-#load("FW_tree.RData")
-#load("MUT_tree.RData")
-#fancyRpartPlot(FW_tree)
-#fancyRpartPlot(MUT_tree)
