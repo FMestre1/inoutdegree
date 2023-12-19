@@ -222,4 +222,3 @@ colnames(vimp_FW_RT) <- c("variable", "var_imp")
 
 View(vimp_MUT_RT)
 View(vimp_FW_RT)
-
