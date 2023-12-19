@@ -8,13 +8,7 @@ final_data_frame_9_ANT <- final_data_frame_8_SPATIAL[final_data_frame_8_SPATIAL$
 
 final_data_frame_9_MUT <- final_data_frame_8_SPATIAL[final_data_frame_8_SPATIAL$type == "mutualistic",]
 #nrow(final_data_frame_9_MUT)
-
-names(final_data_frame_9_ANT)
-
-bio1 + bio2 + bio3 + bio4 + bio5 + bio6 + bio7 + 
-bio8 + bio9 + bio10 + bio11 + bio12 + bio13 + bio14 +
-bio15 + bio16 + bio17 + bio18 + bio19 + solar_radiation +                
-human_footprint  
+#names(final_data_frame_9_ANT)
 
 rpart_FW2 <- rpart::rpart(distance ~ bio1 + bio2 + bio3 + bio4 + bio5 + bio6 + bio7 + 
                             bio8 + bio9 + bio10 + bio11 + bio12 + bio13 + bio14 +

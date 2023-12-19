@@ -54,7 +54,7 @@ write.csv(final_data_frame_9_MUT, file = "final_data_frame_9_MUT_3_14DEZ23.csv")
 write.csv(responses_ANT, file = "responses_ANT_14DEZ23.csv")
 write.csv(final_data_frame_9_ANT, file = "final_data_frame_9_ANT_3_14DEZ23.csv")
 
-#R code run in the version 3.2.0 - START
+#R code run in the version 3.2.0 - START #######################################
 
 #Clean the environment
 #rm(list = ls())
@@ -124,7 +124,7 @@ tmp_MUT_MULT <- printcp(MUT_tree)
 rsq.val_MUT_MULT <- 1-tmp_MUT_MULT[,c(3,4)] 
 round(as.numeric(rsq.val_MUT_MULT[nrow(rsq.val_MUT_MULT),][1]),3)
 
-#R code run in the version 3.2.0 - END
+#R code run in the version 3.2.0 - END  ########################################
 
 ################################################################################
 # Univariate Regression Tree
@@ -204,8 +204,8 @@ vimp_FW <- data.frame(rownames(vimp_FW), vimp_FW$Overall)
 colnames(vimp_MUT) <- c("variable", "var_imp")
 colnames(vimp_FW) <- c("variable", "var_imp")
 
-View(vimp_MUT)
-View(vimp_FW)
+#View(vimp_MUT)
+#View(vimp_FW)
 
 load("FW_tree.RData")
 load("MUT_tree.RData")
@@ -220,5 +220,5 @@ vimp_FW_RT <- data.frame(rownames(vimp_FW_RT), vimp_FW_RT$Overall)
 colnames(vimp_MUT_RT) <- c("variable", "var_imp")
 colnames(vimp_FW_RT) <- c("variable", "var_imp")
 
-View(vimp_MUT_RT)
-View(vimp_FW_RT)
+#View(vimp_MUT_RT)
+#View(vimp_FW_RT)

@@ -60,8 +60,3 @@ final_data_frame_8_SPATIAL <- final_data_frame_8_SPATIAL[final_data_frame_8_SPAT
 
 #Save shapefile to fig.1
 #terra::writeVector(final_data_frame_8_SPATIAL, "final_data_frame_8_SPATIAL.shp")
-
-
-
-
-
