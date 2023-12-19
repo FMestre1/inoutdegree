@@ -189,3 +189,37 @@ round(as.numeric(rsq.val_ANT_pruned[nrow(rsq.val_ANT_pruned),][1]),3)*100
 #Plot
 fancyRpartPlot(ptree_rpart_MUT)
 fancyRpartPlot(ptree_rpart_FW)
+
+################################################################################
+# Variable Importance
+################################################################################
+
+#Variable Importance - Multivariate Regression Trees
+vimp_MUT <- as.data.frame(caret::varImp(ptree_rpart_MUT))
+vimp_FW <- as.data.frame(caret::varImp(ptree_rpart_FW))
+
+vimp_MUT <- data.frame(rownames(vimp_MUT), vimp_MUT$Overall)
+vimp_FW <- data.frame(rownames(vimp_FW), vimp_FW$Overall)
+
+colnames(vimp_MUT) <- c("variable", "var_imp")
+colnames(vimp_FW) <- c("variable", "var_imp")
+
+View(vimp_MUT)
+View(vimp_FW)
+
+load("FW_tree.RData")
+load("MUT_tree.RData")
+
+#Variable Importance - Regression Trees
+vimp_MUT_RT <- as.data.frame(caret::varImp(MUT_tree))
+vimp_FW_RT <- as.data.frame(caret::varImp(FW_tree))
+
+vimp_MUT_RT <- data.frame(rownames(vimp_MUT_RT), vimp_MUT_RT$Overall)
+vimp_FW_RT <- data.frame(rownames(vimp_FW_RT), vimp_FW_RT$Overall)
+
+colnames(vimp_MUT_RT) <- c("variable", "var_imp")
+colnames(vimp_FW_RT) <- c("variable", "var_imp")
+
+View(vimp_MUT_RT)
+View(vimp_FW_RT)
+
