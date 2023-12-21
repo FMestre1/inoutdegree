@@ -93,5 +93,5 @@ summary(glm_MUT)
 #                                        solar_radiation = "Solar radiation", 
 #                                        human_footprint = "Human footprint"
 #                                       )
-            )
+#            )
 

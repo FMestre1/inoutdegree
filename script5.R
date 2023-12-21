@@ -177,3 +177,25 @@ ggarrange(ant_viol, mut_viol,
           labels = c("A", "B"),
           ncol = 2, nrow = 1)
 
+################################################################################
+# Violin plots - overall distance
+################################################################################
+#20-12-2023
+
+df1 <- data.frame(final_data_frame_9_ANT$distance, rep("antagonistic", length(final_data_frame_9_ANT$distance)))
+df2 <- data.frame(final_data_frame_9_MUT$distance, rep("mutualistic", length(final_data_frame_9_MUT$distance)))
+
+names(df1) <- c("distance", "type")
+names(df2) <- c("distance", "type")
+
+df3 <- rbind(df1, df2)
+
+all_viol <- ggplot(df3, aes(x=type, y=distance, fill=type)) +
+  geom_violin(scale = "count", trim = F, adjust = 0.75) +
+  geom_point() +
+  ggtitle("Distance in antagonistic and mutualistic networks") +
+  xlab("Network types") + 
+  ylab("") +
+  theme(legend.position = "none")
+
+all_viol
