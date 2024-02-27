@@ -146,8 +146,8 @@ nrow(final_data_frame_10_ANT)
 nrow(final_data_frame_10_MUT)
 
 #Plot
-fancyRpartPlot(rpart_MUT, cex = 0.5)
-fancyRpartPlot(rpart_FW, cex = 0.5)
+rattle::fancyRpartPlot(rpart_MUT, cex = 0.5)
+rattle::fancyRpartPlot(rpart_FW, cex = 0.5)
 
 #Code from:
 #https://www.edureka.co/blog/implementation-of-decision-tree/
