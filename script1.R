@@ -1,12 +1,12 @@
 ################################################################################
 #                                                                              #
-#      Towards interpreting in- and out-degree in ecological networks          #
+#             Environmental and Human effects on in- and out-degree            #
+#                    distributions in Ecological Networks                      #
 #    Mestre, F.; Bastazini, V.A.G.; Galiana, N.; Rozenfeld, A.; Araújo, M.B.   #
 #                                                                              #
 ################################################################################
 
 #FMestre
-#04-12-2023
 
 #Load packages
 library(waddR)
@@ -128,7 +128,7 @@ names(in_degree_list) <- network_number_list
 names(out_degree_list) <- network_number_list
 
 ################################################################################
-# Create Geographic Table
+# 3. Create Geographic Table
 ################################################################################
 
 xy_MUT <- list()
@@ -380,7 +380,7 @@ final_data_frame <- final_data_frame[!is.na(final_data_frame$x),]
 #View(final_data_frame)
 
 ################################################################################
-# Add Ecosystem Information
+# 4. Add Ecosystem Information
 ################################################################################
 
 final_data_frame_2 <- cbind(final_data_frame,NA)
@@ -467,7 +467,7 @@ final_data_frame_3 <- final_data_frame_2[!is.na(final_data_frame_2$ecosystem),]
 #final_data_frame_3[is.na(final_data_frame_3$ecosystem),]$doi
 
 ################################################################################
-# Remove Marine Networks
+# 5. Remove Marine Networks
 ################################################################################
 
 final_data_frame_4 <- final_data_frame_3[!final_data_frame_3$ecosystem == "marine",]
@@ -475,7 +475,7 @@ final_data_frame_4 <- final_data_frame_3[!final_data_frame_3$ecosystem == "marin
 #View(final_data_frame_4)
 
 ################################################################################
-# Remove non-directed graphs
+# 6. Remove non-directed graphs
 ################################################################################
 
 is_directed <- c(unlist(lapply(mutualistic_networks_igraph, is.directed)),
@@ -501,7 +501,7 @@ net_id_is_directed <- c(net_id_is_directed_mut, net_id_is_directed_ant)
 table(final_data_frame_4$network_number %in% net_id_is_directed)
 
 ################################################################################
-#Select by year - above 1980
+# 7. Select by year - above 1980
 ################################################################################
 
 final_data_frame_5 <- final_data_frame_4[(final_data_frame_4$year > 1980),]
@@ -509,7 +509,7 @@ final_data_frame_5 <- final_data_frame_4[(final_data_frame_4$year > 1980),]
 #nrow(final_data_frame_5)
 
 ################################################################################
-# Create geographic data frame
+# 8. Create geographic data frame
 ################################################################################
 
 #Load world shapefile
