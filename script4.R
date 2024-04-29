@@ -2,6 +2,9 @@
 # Run the Regression Trees
 ################################################################################
 
+#Loading packages
+library(mvpart)
+
 #names(final_data_frame_8_SPATIAL)
 
 #Delete some columns
@@ -58,8 +61,6 @@ write.csv(final_data_frame_9_ANT, file = "final_data_frame_9_ANT_3_14DEZ23.csv")
 
 #Clean the environment
 #rm(list = ls())
-
-library(mvpart)
 
 responses_MUT <- read.csv("C:\\Users\\asus\\Documents\\github\\inoutdegree\\responses_MUT_14DEZ23.csv")
 final_data_frame_9_MUT <- read.csv("C:\\Users\\asus\\Documents\\github\\inoutdegree\\final_data_frame_9_MUT_3_14DEZ23.csv")
