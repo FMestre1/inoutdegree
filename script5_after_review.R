@@ -14,6 +14,12 @@ library(randomForest)
 #?randomForest::randomForest
 #remotes::install_github('munoztd0/reprtree')
 library(reprtree)
+library(mgcv)
+library(easystats)
+#?mgcv::gam
+#install.packages("remotes")
+#remotes::install_github("samclifford/mgcv.helper")
+library(mgcv.helper)
 
 ################################################################################
 #                             GENERATE REFERENCE LIST
@@ -107,13 +113,6 @@ randomForest::varImpPlot(rforest_MUT)
 #                                     GAM
 ################################################################################
 
-library(mgcv)
-library(easystats)
-#?mgcv::gam
-#install.packages("remotes")
-#remotes::install_github("samclifford/mgcv.helper")
-library(mgcv.helper)
-
 gam_fw <- mgcv::gam(distance ~ bio12+bio15+solar_radiation+human_footprint,
                     data= final_data_frame_10_ANT
                     )
@@ -131,10 +130,12 @@ model_parameters(gam_fw)
 #Model performance
 model_performance(gam_fw)
 
-#Run checks
+#Run checks for the assumptions
 check_autocorrelation(gam_fw)
 check_collinearity(gam_fw)
 check_heteroscedasticity(gam_fw)
+
+#Model report
 report(gam_fw)
 
 #Check
@@ -142,4 +143,72 @@ report(gam_fw)
 #          type=c("deviance","pearson","response"),
 #          k.sample=5000,k.rep=200,
 #          rep=0, level=.9, rl.col=2, rep.col="gray80", ...)
+
+
+################################################################################
+#
+################################################################################
+
+library(ipred)
+library(rsample)
+library(caret)
+
+# train bagged model
+bagged_fw <- ipred::bagging(
+  formula = distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint,
+  data    = final_data_frame_10_ANT,
+  coob    = TRUE
+)
+
+ntree <- 10:100
+
+# create empty vector to store OOB RMSE values
+rmse_fw <- vector(mode = "numeric", length = length(ntree))
+
+for (i in seq_along(ntree)) {
+  
+  # reproducibility
+  set.seed(123)
+  
+  # perform bagged model
+  bagged_fw <- ipred::bagging(
+    formula = distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint,
+    data    = final_data_frame_10_ANT,
+    coob    = TRUE,
+    nbagg   = ntree[i]
+    )
+
+  # get OOB error
+  rmse_fw[i] <- bagged_fw$err
+}
+
+plot(ntree, rmse_fw, type = 'l', lwd = 2)
+abline(v = 23, col = "red", lty = "dashed")
+
+################################################################################
+
+# Specify 10-fold cross validation
+ctrl <- caret::trainControl(method = "cv",  number = 10) 
+
+set.seed(123)
+final_data_frame_10_ANT_split <- rsample::initial_split(final_data_frame_10_ANT, prop = .7)
+final_data_frame_10_ANT_train <- rsample::training(final_data_frame_10_ANT_split)
+final_data_frame_10_ANT_test  <- rsample::testing(final_data_frame_10_ANT_split)
+
+
+# CV bagged model
+bagged_cv_FW <- caret::train(
+  form = distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint,
+  data = final_data_frame_10_ANT_train,
+  method = "treebag",
+  trControl = ctrl,
+  importance = TRUE,
+  na.action = na.omit
+)
+
+#Plot Var Importance
+plot(caret::varImp(bagged_cv_FW))  
+
+#predict on test dataset
+predict(bagged_cv_FW, final_data_frame_10_ANT_test)
 
