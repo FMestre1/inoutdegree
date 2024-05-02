@@ -9,7 +9,6 @@
 library(devtools)
 library(stringr)
 library(writexl)
-##### Loading packages #####
 library(randomForest)
 #?randomForest::randomForest
 #remotes::install_github('munoztd0/reprtree')
@@ -84,8 +83,7 @@ reference_list$Reference <- stringr::str_remove(reference_list$Reference, "\\[1\
 #                   cv.fold = 10,
 #                   step = 1) # ERROR!!
 
-
-#### START - NOT USED
+#### FUNCTIONS TO PLOT TREES - START - NOT USED
 
 #From: https://gist.github.com/sillasgonzaga/eef0577c14b83b32f9b7cc480d2765dd
 plot_rf_tree <- function(final_model, tree_num, shorten_label = TRUE) {
@@ -187,8 +185,7 @@ tree_func <- function(final_model, tree_num) {
   print(plot)
 }
 
-#### END - NOT USED
-
+#### FUNCTIONS TO PLOT TREES - END - NOT USED
 
 ##### Random Forest #####
 
@@ -214,13 +211,15 @@ rforest_MUT <- randomForest(distance ~ bio1+bio4+bio12+bio15+solar_radiation+hum
 # 2.2. Variable importance
 randomForest::varImpPlot(rforest_MUT)
 
-
 ################################################################################
 #                                     GAM
 ################################################################################
 
+#?mgcv::gam
+
 gam_fw <- mgcv::gam(distance ~ bio12+bio15+solar_radiation+human_footprint,
-                    data= final_data_frame_10_ANT
+                    data= final_data_frame_10_ANT,
+                    family = gaussian()
                     )
 
 summary(gam_fw)
