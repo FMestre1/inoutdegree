@@ -188,13 +188,17 @@ tree_func <- function(final_model, tree_num) {
 #### FUNCTIONS TO PLOT TREES - END - NOT USED
 
 ##### Random Forest #####
+#?randomForest
 
 # 1.1. Food webs
 rforest_FW <- randomForest(distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint, 
                            importance=TRUE,
                            proximity=TRUE,
                            na.action=na.omit,
-                           data = final_data_frame_10_ANT)
+                           data = final_data_frame_10_ANT,
+                           ntree=1000,
+                           keep.forest=TRUE
+                           )
 
 # 1.2. Variable importance
 randomForest::varImpPlot(rforest_FW)
@@ -259,6 +263,8 @@ library(ipred)
 library(rsample)
 library(caret)
 
+##### ANT  #####
+
 # Train bagged model
 bagged_fw <- ipred::bagging(
   formula = distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint,
@@ -292,10 +298,49 @@ for (i in seq_along(ntree)) {
 plot(ntree, rmse_fw, type = 'l', lwd = 2)
 abline(v = 23, col = "red", lty = "dashed")
 
+##### MUT  #####
+
+# Train bagged model
+bagged_mut <- ipred::bagging(
+  formula = distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint,
+  data    = final_data_frame_10_MUT,
+  coob    = TRUE
+)
+
+ntree <- 10:100
+
+# Create empty vector to store RMSE values
+rmse_mut <- vector(mode = "numeric", length = length(ntree))
+
+for (i in seq_along(ntree)) {
+  
+  # reproducibility
+  set.seed(123)
+  
+  # perform bagged model
+  bagged_mut <- ipred::bagging(
+    formula = distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint,
+    data    = final_data_frame_10_MUT,
+    coob    = TRUE,
+    nbagg   = ntree[i]
+  )
+  
+  # get OOB error
+  rmse_mut[i] <- bagged_mut$err
+}
+
+#plot RMSE
+plot(ntree, rmse_mut, type = 'l', lwd = 2)
+
+################################################################################
+#                     Random Forest 70%-30% (train/test)
 ################################################################################
 
 # Specify 10-fold cross validation
-ctrl <- caret::trainControl(method = "cv",  number = 10) 
+ctrl <- caret::trainControl(method = "LOOCV",  number = 10) 
+
+
+##### ANT #####
 
 # Split dataset: train/test
 set.seed(123)
@@ -321,3 +366,32 @@ plot(caret::varImp(bagged_cv_FW))
 red_fw <- predict(bagged_cv_FW, final_data_frame_10_ANT_test)
 RMSE(red_fw, final_data_frame_10_ANT_test[complete.cases(final_data_frame_10_ANT_test),]$distance)
 
+
+##### MUT #####
+
+# Split dataset: train/test
+set.seed(123)
+
+final_data_frame_10_MUT_split <- rsample::initial_split(final_data_frame_10_MUT, prop = .7)
+final_data_frame_10_MUT_train <- rsample::training(final_data_frame_10_MUT_split)
+final_data_frame_10_MUT_test  <- rsample::testing(final_data_frame_10_MUT_split)
+
+# CV bagged model
+bagged_cv_MUT <- caret::train(
+  form = distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint,
+  data = final_data_frame_10_MUT_train,
+  method = "treebag",
+  trControl = ctrl,
+  importance = TRUE,
+  na.action = na.omit
+)
+
+#Plot Var Importance
+plot(caret::varImp(bagged_cv_MUT))  
+
+#predict on test dataset
+red_mut <- predict(bagged_cv_MUT, final_data_frame_10_MUT_test)
+RMSE(red_mut, final_data_frame_10_MUT_test[complete.cases(final_data_frame_10_MUT_test),]$distance)
+
+################################################################################
+################################################################################
