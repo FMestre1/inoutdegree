@@ -117,9 +117,7 @@ gam_fw <- mgcv::gam(distance ~ bio12+bio15+solar_radiation+human_footprint,
                     data= final_data_frame_10_ANT
                     )
 
-#VIF
-#?vif.gam
-vif.gam(gam_fw)
+summary(gam_fw)
 
 #From...
 #https://maulikbhatt.quarto.pub/quartopub/posts/Easystats/Easystats.html
@@ -143,7 +141,6 @@ report(gam_fw)
 #          type=c("deviance","pearson","response"),
 #          k.sample=5000,k.rep=200,
 #          rep=0, level=.9, rl.col=2, rep.col="gray80", ...)
-
 
 ################################################################################
 #                  Bootstrap aggregating (bagging) approach
