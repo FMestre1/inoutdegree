@@ -21,6 +21,18 @@ library(easystats)
 library(mgcv.helper)
 
 ################################################################################
+#                              USE THESE DATA FILES
+################################################################################
+
+#Load
+#read.csv("final_data_frame_10_ANT_09_05_2024.csv")
+#read.csv("final_data_frame_10_MUT_09_05_2024.csv")
+#read.csv("responses_MUT_09_05_2024.csv")
+#read.csv("final_data_frame_9_MUT_09_05_2024.csv")
+#read.csv("responses_ANT_09_05_2024.csv")
+#read.csv("final_data_frame_9_ANT_09_05_2024.csv")
+
+################################################################################
 #                             GENERATE REFERENCE LIST
 ################################################################################
 
