@@ -52,11 +52,6 @@ names(final_data_frame_9_ANT)[38] <- "distance"
 names(final_data_frame_9_ANT)[34] <- "solar_radiation"
 names(final_data_frame_9_ANT)[36] <- "human_footprint"
 
-write.csv(responses_MUT, file = "responses_MUT_14DEZ23.csv")
-write.csv(final_data_frame_9_MUT, file = "final_data_frame_9_MUT_3_14DEZ23.csv")
-write.csv(responses_ANT, file = "responses_ANT_14DEZ23.csv")
-write.csv(final_data_frame_9_ANT, file = "final_data_frame_9_ANT_3_14DEZ23.csv")
-
 #R code run in the version 3.2.0 - START #######################################
 
 #Clean the environment
@@ -223,3 +218,11 @@ colnames(vimp_FW_RT) <- c("variable", "var_imp")
 
 #View(vimp_MUT_RT)
 #View(vimp_FW_RT)
+
+#Save
+#write.csv(final_data_frame_10_ANT, file = "final_data_frame_10_ANT_09_05_2024.csv")
+#write.csv(final_data_frame_10_MUT, file = "final_data_frame_10_MUT_09_05_2024.csv")
+#write.csv(responses_MUT, file = "responses_MUT_09_05_2024.csv")
+#write.csv(final_data_frame_9_MUT, file = "final_data_frame_9_MUT_09_05_2024.csv")
+#write.csv(responses_ANT, file = "responses_ANT_09_05_2024.csv")
+#write.csv(final_data_frame_9_ANT, file = "final_data_frame_9_09_05_2024.csv")
