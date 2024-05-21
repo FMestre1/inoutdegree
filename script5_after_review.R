@@ -19,6 +19,9 @@ library(easystats)
 #install.packages("remotes")
 #remotes::install_github("samclifford/mgcv.helper")
 library(mgcv.helper)
+#devtools::install_github("araastat/reprtree")
+library(reprtree)
+source("reprtree_functions.R")
 
 ################################################################################
 #                              USE THESE DATA FILES
@@ -197,6 +200,37 @@ tree_func <- function(final_model, tree_num) {
   print(plot)
 }
 
+#From: https://github.com/araastat/reprtree/blob/master/R/ReprTree.R
+#(installed the package reprtree instead)
+ReprTree <- function(rforest, newdata, metric='d2'){
+  
+  # rforest A randomForest object
+  # newdata The data on which predictions will be computed
+  # metric The metric to be used to evaluate distance between trees. Currently
+  # only the d2 metric is implemented
+  #A list object containing representations of the representative trees
+  #conformable with the \code{tree} class. Names of the list give the indices
+  #of the representative trees in the set of trees. 
+  
+  if(metric!='d2') stop('invalid metric!')
+  require(randomForest)
+  print('Constructing distance matrix...')
+  preds <- predict2(rforest, newdata=newdata, predict.all=T)
+  preds.indiv <- preds$individual
+  d <- dist.fn(t(preds.indiv), method=ifelse(rforest$type=='classification',
+                                             'mismatch',
+                                             'euclidean'))
+  print('Finding representative trees...')
+  D <- colMeans(d)
+  index <- which(D==min(D))
+  trees <- lapply(as.list(index), function(i) getTree(rforest, i, labelVar=TRUE))
+  names(trees) <- as.character(index)
+  trees <- lapply(trees, as.tree, rforest)
+  out <- list(trees=trees,D = D)
+  class(out) <- c('reprtree','list')
+  return(out)
+}
+
 #### FUNCTIONS TO PLOT TREES - END - NOT USED
 
 ##### Random Forest #####
@@ -215,7 +249,9 @@ rforest_FW <- randomForest(distance ~ bio1+bio4+bio12+bio15+solar_radiation+huma
 # 1.2. Variable importance
 randomForest::varImpPlot(rforest_FW)
 #reprtree:::plot.getTree(rforest_FW, k=3, depth=4)
-
+#Try this function
+rforest_FW_reprtree <- ReprTree(rforest_FW, final_data_frame_10_ANT)
+#plot.reprtree(rforest_FW_reprtree)
 
 # 2.1. Mutualistic Networks
 rforest_MUT <- randomForest(distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint, 
