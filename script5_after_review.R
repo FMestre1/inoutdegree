@@ -19,9 +19,8 @@ library(easystats)
 #install.packages("remotes")
 #remotes::install_github("samclifford/mgcv.helper")
 library(mgcv.helper)
-#devtools::install_github("araastat/reprtree")
-library(reprtree)
-source("reprtree_functions.R")
+library(ggplot2)
+
 
 ################################################################################
 #                              USE THESE DATA FILES
@@ -35,59 +34,6 @@ source("reprtree_functions.R")
 #read.csv("responses_ANT_09_05_2024.csv")
 #read.csv("final_data_frame_9_ANT_09_05_2024.csv")
 
-################################################################################
-#                             GENERATE REFERENCE LIST
-################################################################################
-
-#1. References for antagonistic networks
-
-ref_ANT <- data.frame(matrix(ncol = 4))
-names(ref_ANT) <- c("Dataset_ID", "Network_ID", "Reference", "DOI")
-
-for(i in 1:length(final_data_frame_9_ANT$doi)){
-#ref1 <- rmangal::search_references(doi = final_data_frame_9_ANT$doi[1]
-ref_ANT[i,1] <- final_data_frame_9_ANT$dataset_id[i]
-ref_ANT[i,2] <- final_data_frame_9_ANT$network_number[i]
-ref1 <- RefManageR::GetBibEntryWithDOI(final_data_frame_9_ANT$doi[i])
-ref_ANT[i,3] <- format(ref1)
-ref_ANT[i,4] <- final_data_frame_9_ANT$doi[i]
-
-message(i)
-}
-
-ref_ANT <- data.frame(ref_ANT, rep("antagonistic_network", nrow(ref_ANT)))
-names(ref_ANT)[5] <- "Network_Type"
-
-#2. References for mutualistic networks
-ref_MUT <- data.frame(matrix(ncol = 4))
-names(ref_MUT) <- c("Dataset_ID", "Network_ID", "Reference", "DOI")
-
-for(i in 1:length(final_data_frame_9_MUT$doi)){
-  #ref1 <- rmangal::search_references(doi = final_data_frame_9_ANT$doi[1]
-  ref_MUT[i,1] <- final_data_frame_9_MUT$dataset_id[i]
-  ref_MUT[i,2] <- final_data_frame_9_MUT$network_number[i]
-  ref2 <- RefManageR::GetBibEntryWithDOI(stringr::str_trim(final_data_frame_9_MUT$doi[i]))
-  ref_MUT[i,3] <- format(ref2)
-  ref_MUT[i,4] <- final_data_frame_9_MUT$doi[i]
-  
-  message(i)
-}
-
-ref_MUT <- data.frame(ref_MUT, rep("mutualistic_network", nrow(ref_MUT)))
-names(ref_MUT)[5] <- "Network_Type"
-
-#3. Build overall table
-reference_list <- rbind(ref_ANT, ref_MUT)
-#
-reference_list$Dataset_ID <- as.numeric(stringr::str_extract(reference_list$Dataset_ID, "\\d+"))
-reference_list$Network_ID <- as.numeric(stringr::str_extract(reference_list$Network_ID, "\\d+"))
-reference_list$Reference <- stringr::str_remove(reference_list$Reference, "\\[1\\] ")
-
-#Verify the reference at:
-#https://mangal.io/api/v2/network/
-
-#4. save it as an Excel file
-#writexl::write_xlsx(reference_list, "reference_list.xlsx")
 
 ################################################################################
 #                             RUN RANDOM FOREST
@@ -98,160 +44,59 @@ reference_list$Reference <- stringr::str_remove(reference_list$Reference, "\\[1\
 #                   cv.fold = 10,
 #                   step = 1) # ERROR!!
 
-#### FUNCTIONS TO PLOT TREES - START - NOT USED
-
-#From: https://gist.github.com/sillasgonzaga/eef0577c14b83b32f9b7cc480d2765dd
-plot_rf_tree <- function(final_model, tree_num, shorten_label = TRUE) {
-  
-  library(tidyr)
-  library(dplyr)
-  library(igraph)
-  library(ggraph)
-  
-  # source: https://shiring.github.io/machine_learning/2017/03/16/rf_plot_ggraph
-  
-  # get tree by index
-  tree <- randomForest::getTree(final_model, 
-                                k = tree_num, 
-                                labelVar = TRUE) %>%
-    tibble::rownames_to_column() %>%
-    # make leaf split points to NA, so the 0s won't get plotted
-    mutate(`split point` = ifelse(is.na(prediction), `split point`, NA))
-  
-  # prepare data frame for graph
-  graph_frame <- data.frame(from = rep(tree$rowname, 2),
-                            to = c(tree$`left daughter`, tree$`right daughter`))
-  
-  # convert to graph and delete the last node that we don't want to plot
-  graph <- graph_from_data_frame(graph_frame) %>%
-    delete_vertices("0")
-  
-  # set node labels
-  V(graph)$node_label <- gsub("_", " ", as.character(tree$`split var`))
-  
-  if (shorten_label) {
-    V(graph)$leaf_label <- substr(as.character(tree$prediction), 1, 1)
-  }
-  
-  V(graph)$split <- as.character(round(tree$`split point`, digits = 2))
-  
-  # plot
-  plot <- ggraph(graph, 'tree') + 
-    theme_graph() +
-    geom_edge_link() +
-    geom_node_point() +
-    geom_node_label(aes(label = leaf_label, fill = leaf_label), na.rm = TRUE, 
-                    repel = FALSE, colour = "white",
-                    show.legend = FALSE)
-  
-  print(plot)
-}
-
-#From: https://www.r-bloggers.com/2017/03/plotting-trees-from-random-forest-models-with-ggraph/
-tree_func <- function(final_model, tree_num) {
-  
-  library(dplyr)
-  library(ggraph)
-  library(igraph)
-  
-  # get tree by index
-  tree <- randomForest::getTree(final_model, 
-                                k = tree_num, 
-                                labelVar = TRUE) %>%
-    tibble::rownames_to_column() %>%
-    # make leaf split points to NA, so the 0s won't get plotted
-    mutate(`split point` = ifelse(is.na(prediction), `split point`, NA))
-  
-  # prepare data frame for graph
-  graph_frame <- data.frame(from = rep(tree$rowname, 2),
-                            to = c(tree$`left daughter`, tree$`right daughter`))
-  
-  # convert to graph and delete the last node that we don't want to plot
-  graph <- graph_from_data_frame(graph_frame) %>%
-    delete_vertices("0")
-  
-  # set node labels
-  V(graph)$node_label <- gsub("_", " ", as.character(tree$`split var`))
-  V(graph)$leaf_label <- as.character(tree$prediction)
-  V(graph)$split <- as.character(round(tree$`split point`, digits = 2))
-  
-  # plot
-  plot <- ggraph(graph, 'dendrogram') + 
-    theme_bw() +
-    geom_edge_link() +
-    geom_node_point() +
-    geom_node_text(aes(label = node_label), na.rm = TRUE, repel = TRUE) +
-    geom_node_label(aes(label = split), vjust = 2.5, na.rm = TRUE, fill = "white") +
-    geom_node_label(aes(label = leaf_label, fill = leaf_label), na.rm = TRUE, 
-                    repel = TRUE, colour = "white", fontface = "bold", show.legend = FALSE) +
-    theme(panel.grid.minor = element_blank(),
-          panel.grid.major = element_blank(),
-          panel.background = element_blank(),
-          plot.background = element_rect(fill = "white"),
-          panel.border = element_blank(),
-          axis.line = element_blank(),
-          axis.text.x = element_blank(),
-          axis.text.y = element_blank(),
-          axis.ticks = element_blank(),
-          axis.title.x = element_blank(),
-          axis.title.y = element_blank(),
-          plot.title = element_text(size = 18))
-  
-  print(plot)
-}
-
-#From: https://github.com/araastat/reprtree/blob/master/R/ReprTree.R
-#(installed the package reprtree instead)
-ReprTree <- function(rforest, newdata, metric='d2'){
-  
-  # rforest A randomForest object
-  # newdata The data on which predictions will be computed
-  # metric The metric to be used to evaluate distance between trees. Currently
-  # only the d2 metric is implemented
-  #A list object containing representations of the representative trees
-  #conformable with the \code{tree} class. Names of the list give the indices
-  #of the representative trees in the set of trees. 
-  
-  if(metric!='d2') stop('invalid metric!')
-  require(randomForest)
-  print('Constructing distance matrix...')
-  preds <- predict2(rforest, newdata=newdata, predict.all=T)
-  preds.indiv <- preds$individual
-  d <- dist.fn(t(preds.indiv), method=ifelse(rforest$type=='classification',
-                                             'mismatch',
-                                             'euclidean'))
-  print('Finding representative trees...')
-  D <- colMeans(d)
-  index <- which(D==min(D))
-  trees <- lapply(as.list(index), function(i) getTree(rforest, i, labelVar=TRUE))
-  names(trees) <- as.character(index)
-  trees <- lapply(trees, as.tree, rforest)
-  out <- list(trees=trees,D = D)
-  class(out) <- c('reprtree','list')
-  return(out)
-}
-
-#### FUNCTIONS TO PLOT TREES - END - NOT USED
 
 ##### Random Forest #####
 #?randomForest
 
+#Divide train and test datasets
+# Split the dataset into training and testing sets
+set.seed(123)
+
+train_indices <- sample(1:nrow(final_data_frame_10_ANT), 0.7 * nrow(final_data_frame_10_ANT))
+train_data_final_data_frame_10_ANT <- final_data_frame_10_ANT[train_indices, ]
+test_data_final_data_frame_10_ANT <- final_data_frame_10_ANT[-train_indices, ]
+
 # 1.1. Food webs
 rforest_FW <- randomForest(distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint, 
                            importance=TRUE,
-                           proximity=TRUE,
-                           na.action=na.omit,
-                           data = final_data_frame_10_ANT,
+                           na.action = na.omit,
+                           data = train_data_final_data_frame_10_ANT,
                            ntree=1000,
                            keep.forest=TRUE
                            )
 
-# 1.2. Variable importance
-randomForest::varImpPlot(rforest_FW)
-#reprtree:::plot.getTree(rforest_FW, k=3, depth=4)
-#Try this function
-rforest_FW_reprtree <- ReprTree(rforest_FW, final_data_frame_10_ANT)
-#plot.reprtree(rforest_FW_reprtree)
+plot(rforest_FW)
+
+#A ntree=600 is good enough
+rforest_FW <- randomForest(distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint, 
+                           importance=TRUE,
+                           na.action = na.omit,
+                           data = train_data_final_data_frame_10_ANT,
+                           ntree=600,
+                           keep.forest=TRUE
+)
+
+plot(rforest_FW)
+
+
+predict_rforest_FW <- predict(rforest_FW, test_data_final_data_frame_10_ANT)
+plot(test_data_final_data_frame_10_ANT$distance, as.vector(predict_rforest_FW))
+
+# Evaluate the accuracy (for regression, you might use other metrics)
+accuracy_fw <- sqrt(mean((as.vector(predict_rforest_FW) - test_data_final_data_frame_10_ANT$distance)^2, na.rm = TRUE))
+cat("Root Mean Squared Error:", accuracy_fw, "\n")
+
+randomForest::varImpPlot(rforest_FW) #Variable importance
+#randomForest::treesize(rforest_FW) # Tree size
+
+fw_predicts_DF <- data.frame(final_data_frame_10_ANT, as.vector(predict(rforest_FW, final_data_frame_10_ANT)))
+names(fw_predicts_DF)[8] <- "predicts"
+
+ggplot(fw_predicts_DF, aes(bio4, predicts)) +
+  geom_point() +
+  geom_smooth(method = lm, formula = y ~ x + I(x^2), se = FALSE)
+
+#AQUI
 
 # 2.1. Mutualistic Networks
 rforest_MUT <- randomForest(distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint, 
@@ -263,122 +108,6 @@ rforest_MUT <- randomForest(distance ~ bio1+bio4+bio12+bio15+solar_radiation+hum
 # 2.2. Variable importance
 randomForest::varImpPlot(rforest_MUT)
 
-################################################################################
-#                                     GAM
-################################################################################
-
-#?mgcv::gam
-
-gam_fw <- mgcv::gam(distance ~ bio12+bio15+solar_radiation+human_footprint,
-                    data= final_data_frame_10_ANT,
-                    family = gaussian()
-                    )
-
-summary(gam_fw)
-
-#From...
-#https://maulikbhatt.quarto.pub/quartopub/posts/Easystats/Easystats.html
-
-#Model paramenters
-model_parameters(gam_fw)
-
-#Model performance
-model_performance(gam_fw)
-
-#Run checks for the assumptions
-check_autocorrelation(gam_fw)
-check_collinearity(gam_fw)
-check_heteroscedasticity(gam_fw)
-
-#Model report
-report(gam_fw)
-
-#Check
-#gam.check(b, old.style=FALSE,
-#          type=c("deviance","pearson","response"),
-#          k.sample=5000,k.rep=200,
-#          rep=0, level=.9, rl.col=2, rep.col="gray80", ...)
-
-################################################################################
-#                  Bootstrap aggregating (bagging) approach
-################################################################################
-
-#From:
-#https://uc-r.github.io/regression_trees
-
-#Load library
-library(ipred)
-library(rsample)
-library(caret)
-
-##### ANT  #####
-
-# Train bagged model
-bagged_fw <- ipred::bagging(
-  formula = distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint,
-  data    = final_data_frame_10_ANT,
-  coob    = TRUE
-)
-
-ntree <- 10:100
-
-# Create empty vector to store RMSE values
-rmse_fw <- vector(mode = "numeric", length = length(ntree))
-
-for (i in seq_along(ntree)) {
-  
-  # reproducibility
-  set.seed(123)
-  
-  # perform bagged model
-  bagged_fw <- ipred::bagging(
-    formula = distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint,
-    data    = final_data_frame_10_ANT,
-    coob    = TRUE,
-    nbagg   = ntree[i]
-    )
-
-  # get OOB error
-  rmse_fw[i] <- bagged_fw$err
-}
-
-#plot RMSE
-plot(ntree, rmse_fw, type = 'l', lwd = 2)
-abline(v = 23, col = "red", lty = "dashed")
-
-##### MUT  #####
-
-# Train bagged model
-bagged_mut <- ipred::bagging(
-  formula = distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint,
-  data    = final_data_frame_10_MUT,
-  coob    = TRUE
-)
-
-ntree <- 10:100
-
-# Create empty vector to store RMSE values
-rmse_mut <- vector(mode = "numeric", length = length(ntree))
-
-for (i in seq_along(ntree)) {
-  
-  # reproducibility
-  set.seed(123)
-  
-  # perform bagged model
-  bagged_mut <- ipred::bagging(
-    formula = distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint,
-    data    = final_data_frame_10_MUT,
-    coob    = TRUE,
-    nbagg   = ntree[i]
-  )
-  
-  # get OOB error
-  rmse_mut[i] <- bagged_mut$err
-}
-
-#plot RMSE
-plot(ntree, rmse_mut, type = 'l', lwd = 2)
 
 ################################################################################
 #                     Random Forest 70%-30% (train/test)

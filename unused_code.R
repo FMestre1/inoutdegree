@@ -414,3 +414,262 @@ summary(glm_MUT)
 #                                       )
 #            )
 
+
+
+
+
+
+
+#### FUNCTIONS TO PLOT TREES - START - NOT USED
+
+#From: https://gist.github.com/sillasgonzaga/eef0577c14b83b32f9b7cc480d2765dd
+plot_rf_tree <- function(final_model, tree_num, shorten_label = TRUE) {
+  
+  library(tidyr)
+  library(dplyr)
+  library(igraph)
+  library(ggraph)
+  
+  # source: https://shiring.github.io/machine_learning/2017/03/16/rf_plot_ggraph
+  
+  # get tree by index
+  tree <- randomForest::getTree(final_model, 
+                                k = tree_num, 
+                                labelVar = TRUE) %>%
+    tibble::rownames_to_column() %>%
+    # make leaf split points to NA, so the 0s won't get plotted
+    mutate(`split point` = ifelse(is.na(prediction), `split point`, NA))
+  
+  # prepare data frame for graph
+  graph_frame <- data.frame(from = rep(tree$rowname, 2),
+                            to = c(tree$`left daughter`, tree$`right daughter`))
+  
+  # convert to graph and delete the last node that we don't want to plot
+  graph <- graph_from_data_frame(graph_frame) %>%
+    delete_vertices("0")
+  
+  # set node labels
+  V(graph)$node_label <- gsub("_", " ", as.character(tree$`split var`))
+  
+  if (shorten_label) {
+    V(graph)$leaf_label <- substr(as.character(tree$prediction), 1, 1)
+  }
+  
+  V(graph)$split <- as.character(round(tree$`split point`, digits = 2))
+  
+  # plot
+  plot <- ggraph(graph, 'tree') + 
+    theme_graph() +
+    geom_edge_link() +
+    geom_node_point() +
+    geom_node_label(aes(label = leaf_label, fill = leaf_label), na.rm = TRUE, 
+                    repel = FALSE, colour = "white",
+                    show.legend = FALSE)
+  
+  print(plot)
+}
+
+#From: https://www.r-bloggers.com/2017/03/plotting-trees-from-random-forest-models-with-ggraph/
+tree_func <- function(final_model, tree_num) {
+  
+  library(dplyr)
+  library(ggraph)
+  library(igraph)
+  
+  # get tree by index
+  tree <- randomForest::getTree(final_model, 
+                                k = tree_num, 
+                                labelVar = TRUE) %>%
+    tibble::rownames_to_column() %>%
+    # make leaf split points to NA, so the 0s won't get plotted
+    mutate(`split point` = ifelse(is.na(prediction), `split point`, NA))
+  
+  # prepare data frame for graph
+  graph_frame <- data.frame(from = rep(tree$rowname, 2),
+                            to = c(tree$`left daughter`, tree$`right daughter`))
+  
+  # convert to graph and delete the last node that we don't want to plot
+  graph <- graph_from_data_frame(graph_frame) %>%
+    delete_vertices("0")
+  
+  # set node labels
+  V(graph)$node_label <- gsub("_", " ", as.character(tree$`split var`))
+  V(graph)$leaf_label <- as.character(tree$prediction)
+  V(graph)$split <- as.character(round(tree$`split point`, digits = 2))
+  
+  # plot
+  plot <- ggraph(graph, 'dendrogram') + 
+    theme_bw() +
+    geom_edge_link() +
+    geom_node_point() +
+    geom_node_text(aes(label = node_label), na.rm = TRUE, repel = TRUE) +
+    geom_node_label(aes(label = split), vjust = 2.5, na.rm = TRUE, fill = "white") +
+    geom_node_label(aes(label = leaf_label, fill = leaf_label), na.rm = TRUE, 
+                    repel = TRUE, colour = "white", fontface = "bold", show.legend = FALSE) +
+    theme(panel.grid.minor = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.background = element_blank(),
+          plot.background = element_rect(fill = "white"),
+          panel.border = element_blank(),
+          axis.line = element_blank(),
+          axis.text.x = element_blank(),
+          axis.text.y = element_blank(),
+          axis.ticks = element_blank(),
+          axis.title.x = element_blank(),
+          axis.title.y = element_blank(),
+          plot.title = element_text(size = 18))
+  
+  print(plot)
+}
+
+#From: https://github.com/araastat/reprtree/blob/master/R/ReprTree.R
+#(installed the package reprtree instead)
+ReprTree <- function(rforest, newdata, metric='d2'){
+  
+  # rforest A randomForest object
+  # newdata The data on which predictions will be computed
+  # metric The metric to be used to evaluate distance between trees. Currently
+  # only the d2 metric is implemented
+  #A list object containing representations of the representative trees
+  #conformable with the \code{tree} class. Names of the list give the indices
+  #of the representative trees in the set of trees. 
+  
+  if(metric!='d2') stop('invalid metric!')
+  require(randomForest)
+  print('Constructing distance matrix...')
+  preds <- predict2(rforest, newdata=newdata, predict.all=T)
+  preds.indiv <- preds$individual
+  d <- dist.fn(t(preds.indiv), method=ifelse(rforest$type=='classification',
+                                             'mismatch',
+                                             'euclidean'))
+  print('Finding representative trees...')
+  D <- colMeans(d)
+  index <- which(D==min(D))
+  trees <- lapply(as.list(index), function(i) getTree(rforest, i, labelVar=TRUE))
+  names(trees) <- as.character(index)
+  trees <- lapply(trees, as.tree, rforest)
+  out <- list(trees=trees,D = D)
+  class(out) <- c('reprtree','list')
+  return(out)
+}
+
+#### FUNCTIONS TO PLOT TREES - END - NOT USED
+
+
+
+################################################################################
+#                                     GAM
+################################################################################
+
+#?mgcv::gam
+
+gam_fw <- mgcv::gam(distance ~ bio12+bio15+solar_radiation+human_footprint,
+                    data= final_data_frame_10_ANT,
+                    family = gaussian()
+)
+
+summary(gam_fw)
+
+#From...
+#https://maulikbhatt.quarto.pub/quartopub/posts/Easystats/Easystats.html
+
+#Model paramenters
+model_parameters(gam_fw)
+
+#Model performance
+model_performance(gam_fw)
+
+#Run checks for the assumptions
+check_autocorrelation(gam_fw)
+check_collinearity(gam_fw)
+check_heteroscedasticity(gam_fw)
+
+#Model report
+report(gam_fw)
+
+#Check
+#gam.check(b, old.style=FALSE,
+#          type=c("deviance","pearson","response"),
+#          k.sample=5000,k.rep=200,
+#          rep=0, level=.9, rl.col=2, rep.col="gray80", ...)
+
+################################################################################
+#                  Bootstrap aggregating (bagging) approach
+################################################################################
+
+#From:
+#https://uc-r.github.io/regression_trees
+
+#Load library
+library(ipred)
+library(rsample)
+library(caret)
+
+##### ANT  #####
+
+# Train bagged model
+bagged_fw <- ipred::bagging(
+  formula = distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint,
+  data    = final_data_frame_10_ANT,
+  coob    = TRUE
+)
+
+ntree <- 10:100
+
+# Create empty vector to store RMSE values
+rmse_fw <- vector(mode = "numeric", length = length(ntree))
+
+for (i in seq_along(ntree)) {
+  
+  # reproducibility
+  set.seed(123)
+  
+  # perform bagged model
+  bagged_fw <- ipred::bagging(
+    formula = distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint,
+    data    = final_data_frame_10_ANT,
+    coob    = TRUE,
+    nbagg   = ntree[i]
+  )
+  
+  # get OOB error
+  rmse_fw[i] <- bagged_fw$err
+}
+
+#plot RMSE
+plot(ntree, rmse_fw, type = 'l', lwd = 2)
+abline(v = 23, col = "red", lty = "dashed")
+
+##### MUT  #####
+
+# Train bagged model
+bagged_mut <- ipred::bagging(
+  formula = distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint,
+  data    = final_data_frame_10_MUT,
+  coob    = TRUE
+)
+
+ntree <- 10:100
+
+# Create empty vector to store RMSE values
+rmse_mut <- vector(mode = "numeric", length = length(ntree))
+
+for (i in seq_along(ntree)) {
+  
+  # reproducibility
+  set.seed(123)
+  
+  # perform bagged model
+  bagged_mut <- ipred::bagging(
+    formula = distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint,
+    data    = final_data_frame_10_MUT,
+    coob    = TRUE,
+    nbagg   = ntree[i]
+  )
+  
+  # get OOB error
+  rmse_mut[i] <- bagged_mut$err
+}
+
+#plot RMSE
+plot(ntree, rmse_mut, type = 'l', lwd = 2)
