@@ -13,7 +13,7 @@ library(randomForest)
 #?randomForest::randomForest
 #remotes::install_github('munoztd0/reprtree')
 library(reprtree)
-library(mgcv)
+#library(mgcv)
 library(easystats)
 #?mgcv::gam
 #install.packages("remotes")
