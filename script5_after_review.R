@@ -20,6 +20,7 @@ library(easystats)
 #remotes::install_github("samclifford/mgcv.helper")
 library(mgcv.helper)
 library(ggplot2)
+library(caret)
 
 ################################################################################
 #                              USE THESE DATA FILES
@@ -32,6 +33,7 @@ library(ggplot2)
 #read.csv("final_data_frame_9_MUT_09_05_2024.csv")
 #read.csv("responses_ANT_09_05_2024.csv")
 #read.csv("final_data_frame_9_ANT_09_05_2024.csv")
+
 
 ################################################################################
 #                             RUN RANDOM FOREST
@@ -78,6 +80,7 @@ plot(rforest_FW)
 
 
 predict_rforest_FW <- predict(rforest_FW, test_data_final_data_frame_10_ANT)
+#Preditec versus obseved
 plot(test_data_final_data_frame_10_ANT$distance, as.vector(predict_rforest_FW))
 
 # Evaluate the accuracy (for regression, you might use other metrics)
@@ -90,11 +93,11 @@ randomForest::varImpPlot(rforest_FW) #Variable importance
 fw_predicts_DF <- data.frame(final_data_frame_10_ANT, as.vector(predict(rforest_FW, final_data_frame_10_ANT)))
 names(fw_predicts_DF)[8] <- "predicts"
 
+#Relate predictions with some variables
 ggplot(fw_predicts_DF, aes(bio4, predicts)) +
   geom_point() +
   geom_smooth(method = lm, formula = y ~ x + I(x^2), se = FALSE)
 
-#AQUI
 
 # 2.1. Mutualistic Networks
 rforest_MUT <- randomForest(distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint, 
@@ -113,7 +116,6 @@ randomForest::varImpPlot(rforest_MUT)
 
 # Specify 10-fold cross validation
 ctrl <- caret::trainControl(method = "LOOCV",  number = 10) 
-
 
 ##### ANT #####
 
@@ -162,11 +164,36 @@ bagged_cv_MUT <- caret::train(
 )
 
 #Plot Var Importance
-plot(caret::varImp(bagged_cv_MUT))  
+
 
 #predict on test dataset
 red_mut <- predict(bagged_cv_MUT, final_data_frame_10_MUT_test)
 RMSE(red_mut, final_data_frame_10_MUT_test[complete.cases(final_data_frame_10_MUT_test),]$distance)
 
 ################################################################################
+#                                      GAM
 ################################################################################
+
+#FMestre
+#05-06-2024
+
+
+
+#?mgcv::gam
+
+gam_fw <- mgcv::gam(distance ~ bio12+bio15+solar_radiation+human_footprint,
+                    data= final_data_frame_10_ANT,
+                    family = gaussian()
+)
+
+summary(gam_fw)
+
+##
+
+gam_mut <- mgcv::gam(distance ~ bio12+bio15+solar_radiation+human_footprint,
+                    data= final_data_frame_10_MUT,
+                    family = gaussian()
+)
+
+summary(gam_mut)
+
