@@ -177,12 +177,56 @@ RMSE(red_mut, final_data_frame_10_MUT_test[complete.cases(final_data_frame_10_MU
 #FMestre
 #05-06-2024
 
+#data_xxx <- read.csv("C:\\Users\\asus\\Documents\\github\\inoutdegree\\final_data_frame_9_09_05_2024.csv")
+
+#names(data_xxx)
+names(final_data_frame_10_ANT)
+
+final_data_frame_9_ANT
+final_data_frame_9_MUT
+
+final_data_frame_9_shp <- terra::vect("C:/Users/asus/Documents/0. Artigos/4. SUBMETIDOS/in_out_degree/shapes/final_data_frame_9.shp")
+final_data_frame_9_shp <- as.data.frame(final_data_frame_9_shp)
+
+final_data_frame_8_shp <- as.data.frame(terra::vect("C:/Users/asus/Documents/github/inoutdegree/final_data_frame_8_SPATIAL.shp"))
+
+#add lat long to final_data_frame_9_ANT and final_data_frame_9_MUT
+
+final_data_frame_9_ANT_v2 <- data.frame(final_data_frame_9_ANT, NA, NA)
+names(final_data_frame_9_ANT_v2)[43:44] <- c("lat", "long")
+
+for(i in 1:nrow(final_data_frame_9_ANT_v2)){
+  
+  row_ANT <- final_data_frame_9_ANT_v2[i,]
+  row_ANT_network_number <- row_ANT$network_number
+  row_ANT_dataset_id <- row_ANT$dataset_id
+  df0 <- final_data_frame_8_shp[final_data_frame_8_shp$network_n0 == row_ANT_network_number & final_data_frame_8_shp$dataset_id == row_ANT_dataset_id,]
+  final_data_frame_9_ANT_v2$lat[i] <- df0$lat
+  final_data_frame_9_ANT_v2$long[i] <- df0$long
+  
+}
+
+##
+
+final_data_frame_9_MUT_v2 <- data.frame(final_data_frame_9_MUT, NA, NA)
+names(final_data_frame_9_MUT_v2)[42:43] <- c("lat", "long")
+
+for(i in 1:nrow(final_data_frame_9_MUT_v2)){
+  
+  row_MUT <- final_data_frame_9_MUT_v2[i,]
+  row_MUT_network_number <- row_MUT$network_number
+  row_MUT_dataset_id <- row_MUT$dataset_id
+  df1 <- final_data_frame_8_shp[final_data_frame_8_shp$network_n0 == row_MUT_network_number & final_data_frame_8_shp$dataset_id == row_MUT_dataset_id,]
+  final_data_frame_9_MUT_v2$lat[i] <- df1$lat
+  final_data_frame_9_MUT_v2$long[i] <- df1$long
+  
+}
 
 
 #?mgcv::gam
 
-gam_fw <- mgcv::gam(distance ~ bio12+bio15+solar_radiation+human_footprint,
-                    data= final_data_frame_10_ANT,
+gam_fw <- mgcv::gam(distance ~ bio12+bio15+solar_radiation+human_footprint + lat + long,
+                    data= final_data_frame_9_ANT_v2,
                     family = gaussian()
 )
 
@@ -190,8 +234,8 @@ summary(gam_fw)
 
 ##
 
-gam_mut <- mgcv::gam(distance ~ bio12+bio15+solar_radiation+human_footprint,
-                    data= final_data_frame_10_MUT,
+gam_mut <- mgcv::gam(distance ~ bio12+bio15+solar_radiation+human_footprint + lat + long,
+                    data= final_data_frame_9_MUT_v2,
                     family = gaussian()
 )
 
