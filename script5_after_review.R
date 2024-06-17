@@ -225,7 +225,9 @@ for(i in 1:nrow(final_data_frame_9_MUT_v2)){
 
 #?mgcv::gam
 
-gam_fw <- mgcv::gam(distance ~ bio12+bio15+solar_radiation+human_footprint + lat + long,
+#gam_fw <- mgcv::gam(distance ~ bio12+bio15+solar_radiation+human_footprint + lat + long,
+#gam_fw <- mgcv::gam(distance ~ bio12+bio15+solar_radiation+human_footprint + s(lat,long),
+gam_fw <- mgcv::gam(distance ~ bio12+bio15+solar_radiation+human_footprint, correlation=corGaus(1,form=~lat+long),
                     data= final_data_frame_9_ANT_v2,
                     family = gaussian()
 )
@@ -234,7 +236,9 @@ summary(gam_fw)
 
 ##
 
-gam_mut <- mgcv::gam(distance ~ bio12+bio15+solar_radiation+human_footprint + lat + long,
+#gam_mut <- mgcv::gam(distance ~ bio12+bio15+solar_radiation+human_footprint + lat + long,
+#gam_mut <- mgcv::gam(distance ~ bio12+bio15+solar_radiation+human_footprint + s(lat, long),
+gam_mut <- mgcv::gam(distance ~ bio12+bio15+solar_radiation+human_footprint, correlation=corGaus(1,form=~lat+long),
                     data= final_data_frame_9_MUT_v2,
                     family = gaussian()
 )
