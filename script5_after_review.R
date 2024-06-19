@@ -1,3 +1,5 @@
+
+
 ################################################################################
 #                             Code ran after review
 ################################################################################
@@ -21,6 +23,8 @@ library(easystats)
 library(mgcv.helper)
 library(ggplot2)
 library(caret)
+library(mgcViz)
+
 
 ################################################################################
 #                              USE THESE DATA FILES
@@ -176,11 +180,7 @@ RMSE(red_mut, final_data_frame_10_MUT_test[complete.cases(final_data_frame_10_MU
 
 #FMestre
 #05-06-2024
-
-#data_xxx <- read.csv("C:\\Users\\asus\\Documents\\github\\inoutdegree\\final_data_frame_9_09_05_2024.csv")
-
-#names(data_xxx)
-names(final_data_frame_10_ANT)
+#citation("mgcv")
 
 final_data_frame_9_ANT
 final_data_frame_9_MUT
@@ -225,23 +225,21 @@ for(i in 1:nrow(final_data_frame_9_MUT_v2)){
 
 #?mgcv::gam
 
-#gam_fw <- mgcv::gam(distance ~ bio12+bio15+solar_radiation+human_footprint + lat + long,
-#gam_fw <- mgcv::gam(distance ~ bio12+bio15+solar_radiation+human_footprint + s(lat,long),
 gam_fw <- mgcv::gam(distance ~ bio12+bio15+solar_radiation+human_footprint, correlation=corGaus(1,form=~lat+long),
                     data= final_data_frame_9_ANT_v2,
                     family = gaussian()
 )
 
-summary(gam_fw)
+#summary(gam_fw, all.terms=TRUE)
 
 ##
 
-#gam_mut <- mgcv::gam(distance ~ bio12+bio15+solar_radiation+human_footprint + lat + long,
-#gam_mut <- mgcv::gam(distance ~ bio12+bio15+solar_radiation+human_footprint + s(lat, long),
 gam_mut <- mgcv::gam(distance ~ bio12+bio15+solar_radiation+human_footprint, correlation=corGaus(1,form=~lat+long),
                     data= final_data_frame_9_MUT_v2,
                     family = gaussian()
 )
 
-summary(gam_mut)
+#summary(gam_mut)
 
+#Plot
+#https://mfasiolo.github.io/mgcViz/articles/mgcviz.html

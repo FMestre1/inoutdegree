@@ -1,4 +1,200 @@
 ################################################################################
+#Compare with previous df
+################################################################################
+#
+#load("C://Users//asus//Documents//github//inoutdegree//final_data_frame_14_PREV_06DEZ23.RData")
+final_data_frame_14_PREV$network_number
+
+#PREVIOUS
+View(t(final_data_frame_14_PREV[final_data_frame_14_PREV$network_number == "Network #91",]))
+#View(final_data_frame_14_PREV)
+#names(final_data_frame_14_PREV)
+nrow(final_data_frame_14_PREV)
+
+#Are there NA in the distances?
+final_data_frame_14_PREV$sq_wasserstein_in_out_location_PERC
+
+#CURRENT
+#final_data_frame_9_df <- data.frame(final_data_frame_9)
+View(t(final_data_frame_9_df[final_data_frame_9_df$network_number == "Network #91",]))
+nrow(final_data_frame_9_df)
+
+#Are there NA in the distances?
+final_data_frame_9_df$sq_wasserstein_in_out_location_PERC
+
+#Look at the same variable dependent in both
+par(mfrow = c(1, 2))
+hist(final_data_frame_14_PREV$sq_wasserstein_in_out_location_PERC, ylim = c(0,100))
+hist(final_data_frame_9_df$sq_wasserstein_in_out_location_PERC, ylim = c(0,100))
+
+#Look at the same variable independent in both
+par(mfrow = c(1, 2))
+hist(final_data_frame_14_PREV$solar_radiation, ylim = c(0,150))
+hist(final_data_frame_9_df$wc2.1_10m_srad_01, ylim = c(0,150))
+
+#write shapefile and rasters to verify in QGIS
+#writeVector(final_data_frame_9, "final_data_frame_9.shp", overwrite=TRUE)
+#writeRaster(solar_radiation, "solar_radiation.tif")
+#writeRaster(h_footprint2, "h_footprint2.tif")
+#writeRaster(bio1, "bio1.tif")
+#writeRaster(bio15, "bio15.tif")
+#writeRaster(bio4, "bio4.tif")
+
+################################################################################
+# Check the NA values
+################################################################################
+#13-12-2023
+
+#Load packages (to plot)
+library(ggraph)
+library(tidygraph)
+
+#Divide the networks with zero overall distance (those producing NA in the distance components) 
+#from the others
+no_na_df <- final_data_frame_8[final_data_frame_8$sq_wasserstein_in_out_distance != 0,]
+yes_na_df <- final_data_frame_8[final_data_frame_8$sq_wasserstein_in_out_distance == 0,]
+#View the distances, just to check...
+#names(no_na_df)
+#names(yes_na_df)
+#
+View(no_na_df[,c(40:43)])
+View(yes_na_df[,c(40:43)])
+#
+#no_na_df$nnodes
+#yes_na_df$nnodes
+#
+#nrow(final_data_frame_8)
+#nrow(no_na_df)
+#nrow(yes_na_df)
+#
+#How many networks with zero distance
+nrow(no_na_df)#how many with distance different from zero
+nrow(yes_na_df)#how many with with distance zero
+#
+#Numbers of each dataset
+no_na_df$network_number
+yes_na_df$network_number
+#
+#And now... the in- and out-degrees
+length(in_degree_list)
+length(out_degree_list)
+
+names_mut <- c()
+names_ant <- c()
+for(i in 1:length(mutualistic_networks)) names_mut[i] <- paste0("Network #", mutualistic_networks[[i]]$network$network_id)
+for(i in 1:length(antagonistic_networks)) names_ant[i] <- paste0("Network #", antagonistic_networks[[i]]$network$network_id)
+
+#How are the in degree distributions with NA (an example)
+#in_degree_list[names(in_degree_list) %in% yes_na_df$network_number][55]
+#How are the out degree distributions with NA (an example)
+#out_degree_list[names(out_degree_list) %in% yes_na_df$network_number][55]
+
+yes_na_df$network_number[70]
+
+which(names_mut == yes_na_df$network_number[70])
+which(names_ant == yes_na_df$network_number[70])
+
+#Check the degree distribution
+which(names(in_degree_list) == yes_na_df$network_number[70])
+which(names(out_degree_list) == yes_na_df$network_number[70])
+#
+in_degree_list[[186]]
+out_degree_list[[186]]
+
+#Where is the network in the lines 34 an 36
+#"Network #5184" %in% names_mut
+#"Network #5184" %in% names_ant
+#which("Network #5184" == names_mut)
+#which("Network #5184" == names_ant)
+
+##IF MUTUALISTIC
+
+#To check the number of interactions between nodes
+igraph::plot.igraph(mutualistic_networks_igraph[[186]])
+
+#Now, knowing if ir is ANT our MUT, we see the network in that number
+ggraph(as_tbl_graph(mutualistic_networks[[186]])) +
+  geom_edge_link(arrow = arrow()) +
+  geom_node_point() +
+  theme_graph()
+
+nrow(mutualistic_networks[[186]]$interactions[,2:3])
+nrow(unique(mutualistic_networks[[186]]$interactions[,2:3]))
+
+##IF ANTAGONIST
+
+#To check the number of interactions between nodes
+igraph::plot.igraph(antagonistic_networks_igraph[[222]])
+
+#Now, knowing if ir is ANT our MUT, we see the network in that number
+ggraph(as_tbl_graph(antagonistic_networks[[222]])) +
+  geom_edge_link(arrow = arrow()) +
+  geom_node_point() +
+  theme_graph()
+
+nrow(antagonistic_networks[[222]]$interactions[,2:3])
+nrow(unique(antagonistic_networks[[222]]$interactions[,2:3]))
+
+
+################################################################################
+#
+################################################################################
+
+
+
+#Fit loess function to raw data
+f_in <- loess(in_degree_list_selected_DF[[105]]$relative_freq ~ in_degree_list_selected_DF[[105]]$nr_vertices)
+f_out <- loess(out_degree_list_selected_DF[[105]]$relative_freq ~ out_degree_list_selected_DF[[105]]$nr_vertices)
+
+#Fidth order polynomials
+f_in2 <- lm(in_degree_list_selected_DF[[105]]$relative_freq ~ poly(in_degree_list_selected_DF[[105]]$nr_vertices, 5, raw=TRUE))
+f_out2 <- lm(out_degree_list_selected_DF[[105]]$relative_freq ~ poly(out_degree_list_selected_DF[[105]]$nr_vertices, 5, raw=TRUE))
+
+#Plot loess fits
+plot(predict(f_in), type = "l", col = "green", lwd = 2)
+lines(predict(f_out), type = "l", col = "red", lwd = 2)
+
+#Plot fifth order polynomials fits
+plot(predict(f_in2), type = "l", col = "green", lwd = 2)
+lines(predict(f_out2), type = "l", col = "red", lwd = 2)
+
+#Plot raw and fits in in-degree
+plot(in_degree_list_selected_DF[[105]], type = "l", col = "green", lwd = 2)
+lines(predict(f_in), col='darkgreen', lwd=2)
+lines(predict(f_in2), col='black', lwd=2)
+
+#Plot raw and fits in out-degree
+plot(out_degree_list_selected_DF[[105]], type = "l", col = "red", lwd = 2)
+lines(predict(f_out), col='darkred', lwd=2)
+lines(predict(f_out2), col='black', lwd=2)
+
+
+################################################################################
+#
+################################################################################
+
+plot(bio15)
+plot(bio1 < 107)
+plot(bio4 > 1.141e+4)
+plot(solar_radiation < 1.124e+4)
+
+plot(bio12 > 810.8)
+plot(solar_radiation > 1.423e+4)
+
+
+plot(h_footprint2 > 21)
+plot(world, add=TRUE)
+plot(final_data_frame_8_SPATIAL, add=TRUE)
+
+#plot
+plot(final_data_frame_8_SPATIAL[final_data_frame_8_SPATIAL$wildareas.v3.2009.human.footprint>21 & final_data_frame_8_SPATIAL$bio1<96,], add=TRUE)
+#Which dataset?
+final_data_frame_8_SPATIAL[final_data_frame_8_SPATIAL$wildareas.v3.2009.human.footprint>21 & final_data_frame_8_SPATIAL$bio1<96,]$dataset_id
+#Network numbers?
+final_data_frame_8_SPATIAL[final_data_frame_8_SPATIAL$wildareas.v3.2009.human.footprint>21 & final_data_frame_8_SPATIAL$bio1<96,]$network_number
+
+
+################################################################################
 # SC 5
 ################################################################################
 
@@ -673,3 +869,29 @@ for (i in seq_along(ntree)) {
 
 #plot RMSE
 plot(ntree, rmse_mut, type = 'l', lwd = 2)
+
+
+
+################################################################################
+#                                 MANOVA
+################################################################################
+
+#?manova 
+
+ANT_manova <- manova(cbind(final_data_frame_9_ANT[,40], final_data_frame_9_ANT[,41], final_data_frame_9_ANT[,42]) ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint,
+                     data = final_data_frame_9_ANT)
+
+summary(ANT_manova, test="Pillai")
+
+##
+
+MUT_manova <- manova(cbind(final_data_frame_9_MUT[,39], final_data_frame_9_MUT[,40], final_data_frame_9_MUT[,41]) ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint,
+                     data = final_data_frame_9_MUT)
+
+summary(MUT_manova, test="Pillai")
+
+
+
+
+
+
