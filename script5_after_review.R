@@ -23,7 +23,6 @@ library(easystats)
 library(mgcv.helper)
 library(ggplot2)
 library(caret)
-library(mgcViz)
 
 
 ################################################################################
@@ -182,15 +181,12 @@ RMSE(red_mut, final_data_frame_10_MUT_test[complete.cases(final_data_frame_10_MU
 #05-06-2024
 #citation("mgcv")
 
-final_data_frame_9_ANT
-final_data_frame_9_MUT
+#final_data_frame_9_ANT
+#final_data_frame_9_MUT
 
+#Getting information on lat long
 final_data_frame_9_shp <- terra::vect("C:/Users/asus/Documents/0. Artigos/4. SUBMETIDOS/in_out_degree/shapes/final_data_frame_9.shp")
 final_data_frame_9_shp <- as.data.frame(final_data_frame_9_shp)
-
-final_data_frame_8_shp <- as.data.frame(terra::vect("C:/Users/asus/Documents/github/inoutdegree/final_data_frame_8_SPATIAL.shp"))
-
-#add lat long to final_data_frame_9_ANT and final_data_frame_9_MUT
 
 final_data_frame_9_ANT_v2 <- data.frame(final_data_frame_9_ANT, NA, NA)
 names(final_data_frame_9_ANT_v2)[43:44] <- c("lat", "long")
@@ -225,21 +221,29 @@ for(i in 1:nrow(final_data_frame_9_MUT_v2)){
 
 #?mgcv::gam
 
-gam_fw <- mgcv::gam(distance ~ bio12+bio15+solar_radiation+human_footprint, correlation=corGaus(1,form=~lat+long),
+gam_fw <- mgcv::gam(distance ~ s(bio12)+s(bio15)+s(solar_radiation)+s(human_footprint), correlation=corGaus(1,form=~lat+long),
                     data= final_data_frame_9_ANT_v2,
-                    family = gaussian()
+                    family = gaussian,
+                    methods = "REML"
 )
 
-#summary(gam_fw, all.terms=TRUE)
-
-##
-
-gam_mut <- mgcv::gam(distance ~ bio12+bio15+solar_radiation+human_footprint, correlation=corGaus(1,form=~lat+long),
-                    data= final_data_frame_9_MUT_v2,
-                    family = gaussian()
-)
-
-#summary(gam_mut)
+summary(gam_fw)
+as.vector(predict(gam_fw, final_data_frame_9_ANT_v2))
+mgcv::plot.gam(gam_fw)
 
 #Plot
-#https://mfasiolo.github.io/mgcViz/articles/mgcviz.html
+
+
+#####
+
+gam_mut <- mgcv::gam(distance ~ s(bio12)+s(bio15)+s(solar_radiation)+s(human_footprint), correlation=corGaus(1,form=~lat+long),
+                    data= final_data_frame_9_MUT_v2,
+                    family = gaussian,
+                    methods = "REML"
+)
+
+summary(gam_mut)
+as.vector(predict(gam_mut, final_data_frame_9_MUT_v2))
+
+
+
