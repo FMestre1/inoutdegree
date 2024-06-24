@@ -23,6 +23,7 @@ library(easystats)
 library(mgcv.helper)
 library(ggplot2)
 library(caret)
+library(gratia)
 
 
 ################################################################################
@@ -179,6 +180,7 @@ RMSE(red_mut, final_data_frame_10_MUT_test[complete.cases(final_data_frame_10_MU
 
 #FMestre
 #05-06-2024
+#Useful video: https://www.youtube.com/watch?v=sgw4cu8hrZM&t=13s
 #citation("mgcv")
 
 #final_data_frame_9_ANT
@@ -221,29 +223,37 @@ for(i in 1:nrow(final_data_frame_9_MUT_v2)){
 
 #?mgcv::gam
 
-gam_fw <- mgcv::gam(distance ~ s(bio12)+s(bio15)+s(solar_radiation)+s(human_footprint), correlation=corGaus(1,form=~lat+long),
+gam_fw <- mgcv::gam(distance ~ s(bio12, k=10)+s(bio15, k=15)+s(solar_radiation, k=10)+s(human_footprint, k=8), correlation=corGaus(1,form=~lat+long),
                     data= final_data_frame_9_ANT_v2,
                     family = gaussian,
                     methods = "REML"
 )
 
 summary(gam_fw)
+gam.check(gam_fw)
 as.vector(predict(gam_fw, final_data_frame_9_ANT_v2))
 mgcv::plot.gam(gam_fw)
-
-#Plot
-
+gratia::draw(gam_fw, scales = "fixed")
 
 #####
 
-gam_mut <- mgcv::gam(distance ~ s(bio12)+s(bio15)+s(solar_radiation)+s(human_footprint), correlation=corGaus(1,form=~lat+long),
+gam_mut <- mgcv::gam(distance ~ s(bio12, k=4)+s(bio15, k=4)+s(solar_radiation, k=4)+s(human_footprint, k=4), correlation=corGaus(1,form=~lat+long),
                     data= final_data_frame_9_MUT_v2,
                     family = gaussian,
                     methods = "REML"
 )
 
 summary(gam_mut)
+gam.check(gam_mut)
 as.vector(predict(gam_mut, final_data_frame_9_MUT_v2))
+mgcv::plot.gam(gam_mut)
+gratia::draw(gam_mut, scales = "fixed")
 
+#plot(gam_mut, pages = 1, all.terms = TRUE, rug = TRUE, residuals = TRUE, 
+#pch = 1, cex = 1, shade = TRUE, seWithMean = TRUE, shift = coef(gam_mut)[1])
 
+#ggplot(data = final_data_frame_9_MUT_v2, aes(y = distance, x = human_footprint)) +
+#  geom_point() + 
+#  theme_bw() +
+#  geom_line(aes(x = human_footprint, y = fitted(gam_mut)), colour = "blue", linewidth = 1.2)
 
