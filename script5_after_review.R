@@ -144,8 +144,8 @@ bagged_cv_FW <- caret::train(
 plot(caret::varImp(bagged_cv_FW))  
 
 #predict on test dataset
-red_fw <- predict(bagged_cv_FW, final_data_frame_10_ANT_test)
-RMSE(red_fw, final_data_frame_10_ANT_test[complete.cases(final_data_frame_10_ANT_test),]$distance)
+#red_fw <- predict(bagged_cv_FW, final_data_frame_10_ANT_test)
+#RMSE(red_fw, final_data_frame_10_ANT_test[complete.cases(final_data_frame_10_ANT_test),]$distance)
 
 
 ##### MUT #####
@@ -171,8 +171,8 @@ bagged_cv_MUT <- caret::train(
 
 
 #predict on test dataset
-red_mut <- predict(bagged_cv_MUT, final_data_frame_10_MUT_test)
-RMSE(red_mut, final_data_frame_10_MUT_test[complete.cases(final_data_frame_10_MUT_test),]$distance)
+#red_mut <- predict(bagged_cv_MUT, final_data_frame_10_MUT_test)
+#RMSE(red_mut, final_data_frame_10_MUT_test[complete.cases(final_data_frame_10_MUT_test),]$distance)
 
 ################################################################################
 #                                      GAM
@@ -256,4 +256,23 @@ gratia::draw(gam_mut, scales = "fixed")
 #  geom_point() + 
 #  theme_bw() +
 #  geom_line(aes(x = human_footprint, y = fitted(gam_mut)), colour = "blue", linewidth = 1.2)
+
+
+#################
+
+#predict_fw <- predict(gam_fw, newdata = final_data_frame_9_ANT_v2, type = "response", se.fit = TRUE)
+
+# Plot the data and the GAM fit
+#ggplot() +
+#  geom_point(data = final_data_frame_9_ANT_v2, aes(x = human_footprint, y = distance)) +
+#  geom_line(data = data.frame(hf = final_data_frame_9_ANT_v2$human_footprint, fit1 = predict_fw$fit), 
+#            aes(x = hf, y = fit1), color = "blue", size = 1) +
+#  geom_ribbon(data = data.frame(hf = final_data_frame_9_ANT_v2$human_footprint, fit1 = predict_fw$fit, se = predict_fw$se.fit), 
+#            aes(x = hf, ymin = fit1 - 1.96 * se, 
+#            ymax = fit1 + 1.96 * se), alpha = 0.3) +
+#  
+#  labs(title = "Generalized Additive Model (GAM)", 
+#       x = "Human Footprint", y = "Distance") +
+#  theme_minimal()
+
 
