@@ -1,5 +1,3 @@
-
-
 ################################################################################
 #                             Code ran after review
 ################################################################################
@@ -20,11 +18,11 @@ library(easystats)
 #?mgcv::gam
 #install.packages("remotes")
 #remotes::install_github("samclifford/mgcv.helper")
-library(mgcv.helper)
+#library(mgcv.helper)
 library(ggplot2)
 library(caret)
-library(gratia)
-
+#library(gratia)
+#library(mgcv)
 
 ################################################################################
 #                              USE THESE DATA FILES
@@ -38,22 +36,13 @@ library(gratia)
 #read.csv("responses_ANT_09_05_2024.csv")
 #read.csv("final_data_frame_9_ANT_09_05_2024.csv")
 
-
 ################################################################################
 #                             RUN RANDOM FOREST
 ################################################################################
 
-#randomForest::rfcv(trainx = final_data_frame_10_ANT[,2:7],
-#                   trainy = final_data_frame_10_ANT$distance,
-#                   cv.fold = 10,
-#                   step = 1) # ERROR!!
-
-
-##### Random Forest #####
 #?randomForest
 
 #Divide train and test datasets
-# Split the dataset into training and testing sets
 set.seed(123)
 
 train_indices <- sample(1:nrow(final_data_frame_10_ANT), 0.7 * nrow(final_data_frame_10_ANT))
@@ -91,188 +80,62 @@ plot(test_data_final_data_frame_10_ANT$distance, as.vector(predict_rforest_FW))
 accuracy_fw <- sqrt(mean((as.vector(predict_rforest_FW) - test_data_final_data_frame_10_ANT$distance)^2, na.rm = TRUE))
 cat("Root Mean Squared Error:", accuracy_fw, "\n")
 
-randomForest::varImpPlot(rforest_FW) #Variable importance
-#randomForest::treesize(rforest_FW) # Tree size
+varimp_fw <- randomForest::varImpPlot(rforest_FW) #Variable importance
+varimp_fw <- as.data.frame(randomForest::varImpPlot(rforest_FW)) #Variable importance
+varimp_fw <- varimp_fw[order(varimp_fw$`%IncMSE`, decreasing = TRUE),]
+varimp_fw <- data.frame(rownames(varimp_fw), varimp_fw)
+names(varimp_fw) <- c("variable_name", "IncMSE", "IncNodePurity")
 
-fw_predicts_DF <- data.frame(final_data_frame_10_ANT, as.vector(predict(rforest_FW, final_data_frame_10_ANT)))
-names(fw_predicts_DF)[8] <- "predicts"
+ggplot(varimp_fw) +
+  geom_col(aes(x = reorder(variable_name, -IncMSE), y = IncMSE), fill = "dodgerblue2", width = 0.3) +
+  xlab("Variable name") +
+  ylab("% IncMSE") +
+  coord_flip()
 
-#Relate predictions with some variables
-ggplot(fw_predicts_DF, aes(bio4, predicts)) +
-  geom_point() +
-  geom_smooth(method = lm, formula = y ~ x + I(x^2), se = FALSE)
+###
 
+train_indices2 <- sample(1:nrow(final_data_frame_10_MUT), 0.7 * nrow(final_data_frame_10_MUT))
+train_data_final_data_frame_10_MUT <- final_data_frame_10_MUT[train_indices2, ]
+test_data_final_data_frame_10_MUT <- final_data_frame_10_MUT[-train_indices2, ]
 
-# 2.1. Mutualistic Networks
+# 1.2. Mutualistic networks
 rforest_MUT <- randomForest(distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint, 
                            importance=TRUE,
-                           proximity=TRUE,
-                           na.action=na.omit,
-                           data = final_data_frame_10_MUT)
-
-# 2.2. Variable importance
-randomForest::varImpPlot(rforest_MUT)
-
-
-################################################################################
-#                     Random Forest 70%-30% (train/test)
-################################################################################
-
-# Specify 10-fold cross validation
-ctrl <- caret::trainControl(method = "LOOCV",  number = 10) 
-
-##### ANT #####
-
-# Split dataset: train/test
-set.seed(123)
-
-final_data_frame_10_ANT_split <- rsample::initial_split(final_data_frame_10_ANT, prop = .7)
-final_data_frame_10_ANT_train <- rsample::training(final_data_frame_10_ANT_split)
-final_data_frame_10_ANT_test  <- rsample::testing(final_data_frame_10_ANT_split)
-
-# CV bagged model
-bagged_cv_FW <- caret::train(
-  form = distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint,
-  data = final_data_frame_10_ANT_train,
-  method = "treebag",
-  trControl = ctrl,
-  importance = TRUE,
-  na.action = na.omit
+                           na.action = na.omit,
+                           data = train_data_final_data_frame_10_MUT,
+                           ntree=1000,
+                           keep.forest=TRUE
 )
 
-#Plot Var Importance
-plot(caret::varImp(bagged_cv_FW))  
+plot(rforest_MUT)
 
-#predict on test dataset
-#red_fw <- predict(bagged_cv_FW, final_data_frame_10_ANT_test)
-#RMSE(red_fw, final_data_frame_10_ANT_test[complete.cases(final_data_frame_10_ANT_test),]$distance)
-
-
-##### MUT #####
-
-# Split dataset: train/test
-set.seed(123)
-
-final_data_frame_10_MUT_split <- rsample::initial_split(final_data_frame_10_MUT, prop = .7)
-final_data_frame_10_MUT_train <- rsample::training(final_data_frame_10_MUT_split)
-final_data_frame_10_MUT_test  <- rsample::testing(final_data_frame_10_MUT_split)
-
-# CV bagged model
-bagged_cv_MUT <- caret::train(
-  form = distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint,
-  data = final_data_frame_10_MUT_train,
-  method = "treebag",
-  trControl = ctrl,
-  importance = TRUE,
-  na.action = na.omit
+rforest_MUT <- randomForest(distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint, 
+                            importance=TRUE,
+                            na.action = na.omit,
+                            data = train_data_final_data_frame_10_MUT,
+                            ntree=600,
+                            keep.forest=TRUE
 )
 
-#Plot Var Importance
+plot(rforest_MUT)
 
+predict_rforest_MUT <- predict(rforest_MUT, test_data_final_data_frame_10_MUT)
+#Preditec versus obseved
+plot(test_data_final_data_frame_10_MUT$distance, as.vector(predict_rforest_MUT))
 
-#predict on test dataset
-#red_mut <- predict(bagged_cv_MUT, final_data_frame_10_MUT_test)
-#RMSE(red_mut, final_data_frame_10_MUT_test[complete.cases(final_data_frame_10_MUT_test),]$distance)
+# Evaluate the accuracy (for regression, you might use other metrics)
+accuracy_mut <- sqrt(mean((as.vector(predict_rforest_MUT) - test_data_final_data_frame_10_MUT$distance)^2, na.rm = TRUE))
+cat("Root Mean Squared Error:", accuracy_mut, "\n")
 
-################################################################################
-#                                      GAM
-################################################################################
+varimp_mut <- as.data.frame(randomForest::varImpPlot(rforest_MUT)) #Variable importance
+varimp_mut <- varimp_mut[order(varimp_mut$`%IncMSE`, decreasing = TRUE),]
+varimp_mut <- data.frame(rownames(varimp_mut), varimp_mut)
+names(varimp_mut) <- c("variable_name", "IncMSE", "IncNodePurity")
 
-#FMestre
-#05-06-2024
-#Useful video: https://www.youtube.com/watch?v=sgw4cu8hrZM&t=13s
-#citation("mgcv")
-
-#final_data_frame_9_ANT
-#final_data_frame_9_MUT
-
-#Getting information on lat long
-final_data_frame_9_shp <- terra::vect("C:/Users/asus/Documents/0. Artigos/4. SUBMETIDOS/in_out_degree/shapes/final_data_frame_9.shp")
-final_data_frame_9_shp <- as.data.frame(final_data_frame_9_shp)
-
-final_data_frame_9_ANT_v2 <- data.frame(final_data_frame_9_ANT, NA, NA)
-names(final_data_frame_9_ANT_v2)[43:44] <- c("lat", "long")
-
-for(i in 1:nrow(final_data_frame_9_ANT_v2)){
-  
-  row_ANT <- final_data_frame_9_ANT_v2[i,]
-  row_ANT_network_number <- row_ANT$network_number
-  row_ANT_dataset_id <- row_ANT$dataset_id
-  df0 <- final_data_frame_8_shp[final_data_frame_8_shp$network_n0 == row_ANT_network_number & final_data_frame_8_shp$dataset_id == row_ANT_dataset_id,]
-  final_data_frame_9_ANT_v2$lat[i] <- df0$lat
-  final_data_frame_9_ANT_v2$long[i] <- df0$long
-  
-}
-
-##
-
-final_data_frame_9_MUT_v2 <- data.frame(final_data_frame_9_MUT, NA, NA)
-names(final_data_frame_9_MUT_v2)[42:43] <- c("lat", "long")
-
-for(i in 1:nrow(final_data_frame_9_MUT_v2)){
-  
-  row_MUT <- final_data_frame_9_MUT_v2[i,]
-  row_MUT_network_number <- row_MUT$network_number
-  row_MUT_dataset_id <- row_MUT$dataset_id
-  df1 <- final_data_frame_8_shp[final_data_frame_8_shp$network_n0 == row_MUT_network_number & final_data_frame_8_shp$dataset_id == row_MUT_dataset_id,]
-  final_data_frame_9_MUT_v2$lat[i] <- df1$lat
-  final_data_frame_9_MUT_v2$long[i] <- df1$long
-  
-}
-
-
-#?mgcv::gam
-
-gam_fw <- mgcv::gam(distance ~ s(bio12, k=10)+s(bio15, k=15)+s(solar_radiation, k=10)+s(human_footprint, k=8), correlation=corGaus(1,form=~lat+long),
-                    data= final_data_frame_9_ANT_v2,
-                    family = gaussian,
-                    methods = "REML"
-)
-
-summary(gam_fw)
-gam.check(gam_fw)
-as.vector(predict(gam_fw, final_data_frame_9_ANT_v2))
-mgcv::plot.gam(gam_fw)
-gratia::draw(gam_fw, scales = "fixed")
-
-#####
-
-gam_mut <- mgcv::gam(distance ~ s(bio12, k=4)+s(bio15, k=4)+s(solar_radiation, k=4)+s(human_footprint, k=4), correlation=corGaus(1,form=~lat+long),
-                    data= final_data_frame_9_MUT_v2,
-                    family = gaussian,
-                    methods = "REML"
-)
-
-summary(gam_mut)
-gam.check(gam_mut)
-as.vector(predict(gam_mut, final_data_frame_9_MUT_v2))
-mgcv::plot.gam(gam_mut)
-gratia::draw(gam_mut, scales = "fixed")
-
-#plot(gam_mut, pages = 1, all.terms = TRUE, rug = TRUE, residuals = TRUE, 
-#pch = 1, cex = 1, shade = TRUE, seWithMean = TRUE, shift = coef(gam_mut)[1])
-
-#ggplot(data = final_data_frame_9_MUT_v2, aes(y = distance, x = human_footprint)) +
-#  geom_point() + 
-#  theme_bw() +
-#  geom_line(aes(x = human_footprint, y = fitted(gam_mut)), colour = "blue", linewidth = 1.2)
-
-
-#################
-
-#predict_fw <- predict(gam_fw, newdata = final_data_frame_9_ANT_v2, type = "response", se.fit = TRUE)
-
-# Plot the data and the GAM fit
-#ggplot() +
-#  geom_point(data = final_data_frame_9_ANT_v2, aes(x = human_footprint, y = distance)) +
-#  geom_line(data = data.frame(hf = final_data_frame_9_ANT_v2$human_footprint, fit1 = predict_fw$fit), 
-#            aes(x = hf, y = fit1), color = "blue", size = 1) +
-#  geom_ribbon(data = data.frame(hf = final_data_frame_9_ANT_v2$human_footprint, fit1 = predict_fw$fit, se = predict_fw$se.fit), 
-#            aes(x = hf, ymin = fit1 - 1.96 * se, 
-#            ymax = fit1 + 1.96 * se), alpha = 0.3) +
-#  
-#  labs(title = "Generalized Additive Model (GAM)", 
-#       x = "Human Footprint", y = "Distance") +
-#  theme_minimal()
+ggplot(varimp_mut) +
+  geom_col(aes(x = reorder(variable_name, -IncMSE), y = IncMSE), fill = "dodgerblue2", width = 0.3) +
+  xlab("Variable name") +
+  ylab("% IncMSE") +
+  coord_flip()
 
 

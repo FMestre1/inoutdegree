@@ -891,6 +891,169 @@ MUT_manova <- manova(cbind(final_data_frame_9_MUT[,39], final_data_frame_9_MUT[,
 summary(MUT_manova, test="Pillai")
 
 
+################################################################################
+#                                      GAM
+################################################################################
+
+#FMestre
+#05-06-2024
+#Useful video: https://www.youtube.com/watch?v=sgw4cu8hrZM&t=13s
+#citation("mgcv")
+
+#final_data_frame_9_ANT
+#final_data_frame_9_MUT
+
+#Getting information on lat long
+final_data_frame_9_shp <- terra::vect("C:/Users/asus/Documents/0. Artigos/4. SUBMETIDOS/in_out_degree/shapes/final_data_frame_9.shp")
+final_data_frame_9_shp <- as.data.frame(final_data_frame_9_shp)
+
+final_data_frame_9_ANT_v2 <- data.frame(final_data_frame_9_ANT, NA, NA)
+names(final_data_frame_9_ANT_v2)[43:44] <- c("lat", "long")
+
+for(i in 1:nrow(final_data_frame_9_ANT_v2)){
+  
+  row_ANT <- final_data_frame_9_ANT_v2[i,]
+  row_ANT_network_number <- row_ANT$network_number
+  row_ANT_dataset_id <- row_ANT$dataset_id
+  df0 <- final_data_frame_8_shp[final_data_frame_8_shp$network_n0 == row_ANT_network_number & final_data_frame_8_shp$dataset_id == row_ANT_dataset_id,]
+  final_data_frame_9_ANT_v2$lat[i] <- df0$lat
+  final_data_frame_9_ANT_v2$long[i] <- df0$long
+  
+}
+
+##
+
+final_data_frame_9_MUT_v2 <- data.frame(final_data_frame_9_MUT, NA, NA)
+names(final_data_frame_9_MUT_v2)[42:43] <- c("lat", "long")
+
+for(i in 1:nrow(final_data_frame_9_MUT_v2)){
+  
+  row_MUT <- final_data_frame_9_MUT_v2[i,]
+  row_MUT_network_number <- row_MUT$network_number
+  row_MUT_dataset_id <- row_MUT$dataset_id
+  df1 <- final_data_frame_8_shp[final_data_frame_8_shp$network_n0 == row_MUT_network_number & final_data_frame_8_shp$dataset_id == row_MUT_dataset_id,]
+  final_data_frame_9_MUT_v2$lat[i] <- df1$lat
+  final_data_frame_9_MUT_v2$long[i] <- df1$long
+  
+}
+
+
+#?mgcv::gam
+
+gam_fw <- mgcv::gam(distance ~ s(bio12, k=10)+s(bio15, k=15)+s(solar_radiation, k=10)+s(human_footprint, k=8), correlation=corGaus(1,form=~lat+long),
+                    data= final_data_frame_9_ANT_v2,
+                    family = gaussian,
+                    methods = "REML"
+)
+
+summary(gam_fw)
+gam.check(gam_fw)
+as.vector(predict(gam_fw, final_data_frame_9_ANT_v2))
+mgcv::plot.gam(gam_fw)
+gratia::draw(gam_fw, scales = "fixed")
+
+#####
+
+gam_mut <- mgcv::gam(distance ~ s(bio12, k=4)+s(bio15, k=4)+s(solar_radiation, k=4)+s(human_footprint, k=4), correlation=corGaus(1,form=~lat+long),
+                     data= final_data_frame_9_MUT_v2,
+                     family = gaussian,
+                     methods = "REML"
+)
+
+summary(gam_mut)
+gam.check(gam_mut)
+as.vector(predict(gam_mut, final_data_frame_9_MUT_v2))
+mgcv::plot.gam(gam_mut)
+gratia::draw(gam_mut, scales = "fixed")
+
+#plot(gam_mut, pages = 1, all.terms = TRUE, rug = TRUE, residuals = TRUE, 
+#pch = 1, cex = 1, shade = TRUE, seWithMean = TRUE, shift = coef(gam_mut)[1])
+
+#ggplot(data = final_data_frame_9_MUT_v2, aes(y = distance, x = human_footprint)) +
+#  geom_point() + 
+#  theme_bw() +
+#  geom_line(aes(x = human_footprint, y = fitted(gam_mut)), colour = "blue", linewidth = 1.2)
+
+
+#################
+
+#predict_fw <- predict(gam_fw, newdata = final_data_frame_9_ANT_v2, type = "response", se.fit = TRUE)
+
+# Plot the data and the GAM fit
+#ggplot() +
+#  geom_point(data = final_data_frame_9_ANT_v2, aes(x = human_footprint, y = distance)) +
+#  geom_line(data = data.frame(hf = final_data_frame_9_ANT_v2$human_footprint, fit1 = predict_fw$fit), 
+#            aes(x = hf, y = fit1), color = "blue", size = 1) +
+#  geom_ribbon(data = data.frame(hf = final_data_frame_9_ANT_v2$human_footprint, fit1 = predict_fw$fit, se = predict_fw$se.fit), 
+#            aes(x = hf, ymin = fit1 - 1.96 * se, 
+#            ymax = fit1 + 1.96 * se), alpha = 0.3) +
+#  
+#  labs(title = "Generalized Additive Model (GAM)", 
+#       x = "Human Footprint", y = "Distance") +
+#  theme_minimal()
+
+
+
+################################################################################
+#                     Random Forest 70%-30% (train/test)
+################################################################################
+
+# Specify 10-fold cross validation
+ctrl <- caret::trainControl(method = "LOOCV",  number = 10) 
+
+##### ANT #####
+
+# Split dataset: train/test
+set.seed(123)
+
+final_data_frame_10_ANT_split <- rsample::initial_split(final_data_frame_10_ANT, prop = .7)
+final_data_frame_10_ANT_train <- rsample::training(final_data_frame_10_ANT_split)
+final_data_frame_10_ANT_test  <- rsample::testing(final_data_frame_10_ANT_split)
+
+# CV bagged model
+bagged_cv_FW <- caret::train(
+  form = distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint,
+  data = final_data_frame_10_ANT_train,
+  method = "treebag",
+  trControl = ctrl,
+  importance = TRUE,
+  na.action = na.omit
+)
+
+#Plot Var Importance
+plot(caret::varImp(bagged_cv_FW))  
+
+#predict on test dataset
+#red_fw <- predict(bagged_cv_FW, final_data_frame_10_ANT_test)
+#RMSE(red_fw, final_data_frame_10_ANT_test[complete.cases(final_data_frame_10_ANT_test),]$distance)
+
+
+##### MUT #####
+
+# Split dataset: train/test
+set.seed(123)
+
+final_data_frame_10_MUT_split <- rsample::initial_split(final_data_frame_10_MUT, prop = .7)
+final_data_frame_10_MUT_train <- rsample::training(final_data_frame_10_MUT_split)
+final_data_frame_10_MUT_test  <- rsample::testing(final_data_frame_10_MUT_split)
+
+# CV bagged model
+bagged_cv_MUT <- caret::train(
+  form = distance ~ bio1+bio4+bio12+bio15+solar_radiation+human_footprint,
+  data = final_data_frame_10_MUT_train,
+  method = "treebag",
+  trControl = ctrl,
+  importance = TRUE,
+  na.action = na.omit
+)
+
+#Plot Var Importance
+plot(caret::varImp(bagged_cv_MUT))  
+
+#predict on test dataset
+#red_mut <- predict(bagged_cv_MUT, final_data_frame_10_MUT_test)
+#RMSE(red_mut, final_data_frame_10_MUT_test[complete.cases(final_data_frame_10_MUT_test),]$distance)
+
 
 
 
